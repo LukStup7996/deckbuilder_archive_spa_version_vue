@@ -1,0 +1,21 @@
+{
+    "name": "deckbuilder_archive/api",
+    "description": "A simple deckbuilding application",
+    "type": "project",
+    "require": {
+        "monolog/monolog": "^3.7"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "deckbuilder_archive_spa_version_vue\\api\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Lukas Stuppacher",
+            "email": "magicluks@live.at"
+        }
+    ],
+    "minimum-stability": "stable"
+}
