@@ -5,7 +5,7 @@ namespace deckbuilder_archive_spa_version_vue\api\config;
 class JwtHelper {
     private static $secretKey = 'your_secret_key'; // Change this to your actual secret key
     private static $algorithm = 'HS256';
-    private static $issuer = 'your_domain.com';
+    private static $issuer = 'http://localhost/deckbuilder_archive_spa_version_vue/api';
 
     public static function createJwt($payload) {
         $header = json_encode(['typ' => 'JWT', 'alg' => self::$algorithm]);
