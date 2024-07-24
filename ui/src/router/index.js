@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import ImprintPage from "../views/ImprintPage.vue"; // Importiere die ImprintPage
 
 const routes = [
   {
@@ -16,7 +15,18 @@ const routes = [
   {
     path: "/imprint",
     name: "imprint",
-    component: ImprintPage, // Verwende das importierte ImprintPage
+    component: () => import("../views/ImprintPage.vue"), // Verwende das importierte ImprintPage
+  },
+  {
+    path: "/card-archive",
+    name: "card-archive",
+    component: () => import("../views/CardArchive.vue"),
+  },
+  {
+    path: "/single-card-display/:cardId",
+    name: "single-card-display",
+    component: () => import("../views/DisplaySingleCard.vue"),
+    props: true,
   },
 ];
 
