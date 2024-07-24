@@ -37,6 +37,11 @@ import { RouterLink } from "vue-router";
             <li class="nav-item">
               <RouterLink class="nav-link" to="/imprint">Imprint</RouterLink>
             </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/card-archive"
+                >Card Archive</RouterLink
+              >
+            </li>
           </ul>
         </div>
       </nav>

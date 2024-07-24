@@ -12,7 +12,7 @@ module.exports = {
     parser: "@babel/eslint-parser",
     requireConfigFile: false,
     ecmaVersion: 2018,
-    sourceType: 'module'
+    sourceType: "module",
   },
   rules: {
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
