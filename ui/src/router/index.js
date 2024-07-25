@@ -43,6 +43,16 @@ const routes = [
     name: "account-settings",
     component: () => import("../views/AccountSettings.vue"),
   },
+  {
+    path: "/deck-creator",
+    name: "deck-creator",
+    component: () => import("../views/DeckCreator.vue"),
+  },
+  {
+    path: "/sand-box",
+    name: "sand-box",
+    component: () => import("../views/SandBox.vue"),
+  },
 ];
 
 const router = createRouter({
