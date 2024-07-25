@@ -5,7 +5,7 @@ import { useArchiveuserApiStore } from "@/stores/archiveuserApiStore";
 export default {
   data() {
     return {
-      selectedOption: "settings",
+      selectedOption: "account-settings",
       newUserName: "",
       newPassword: "",
       confirmPassword: "",

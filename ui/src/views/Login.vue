@@ -2,7 +2,7 @@
 import { useArchiveuserApiStore } from "@/stores/archiveuserApiStore";
 
 export default {
-  name: "UserLogin",
+  name: "user-login",
   data() {
     return {
       email: "",
