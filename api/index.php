@@ -7,7 +7,6 @@ ini_set("display_errors", 1);
 include 'src/config/config.php';
 require 'vendor/autoload.php';
 require 'src\config\JwtHelper.php';
-//update file
 
 $controller = new NavigationController();
 $controller->route();

@@ -1,5 +1,19 @@
 <script setup>
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
+import { ref } from "vue";
+import { useArchiveuserApiStore } from "@/stores/archiveuserApiStore";
+import { getToken, removeToken } from "@/utils/jwtHelper";
+
+const store = useArchiveuserApiStore();
+const router = useRouter();
+const isAuthenticated = ref(!!getToken());
+
+const handleLogout = () => {
+  store.logoutUser();
+  removeToken();
+  isAuthenticated.value = false;
+  router.push("/");
+};
 </script>
 
 <template>
@@ -41,6 +55,58 @@ import { RouterLink } from "vue-router";
               <RouterLink class="nav-link" to="/card-archive"
                 >Card Archive</RouterLink
               >
+            </li>
+            <li class="nav-item dropdown" v-if="isAuthenticated">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Account
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li>
+                  <RouterLink class="dropdown-item" to="/account-settings"
+                    >Account Settings</RouterLink
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    @click.prevent="handleLogout"
+                    >Logout</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown" v-else>
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Account
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li>
+                  <RouterLink class="dropdown-item" to="/user-login"
+                    >Login</RouterLink
+                  >
+                </li>
+                <li>
+                  <RouterLink class="dropdown-item" to="/account-creation"
+                    >Create Account</RouterLink
+                  >
+                </li>
+              </ul>
             </li>
           </ul>
         </div>

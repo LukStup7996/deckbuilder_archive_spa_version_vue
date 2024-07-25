@@ -15,7 +15,7 @@ const routes = [
   {
     path: "/imprint",
     name: "imprint",
-    component: () => import("../views/ImprintPage.vue"), // Verwende das importierte ImprintPage
+    component: () => import("../views/ImprintPage.vue"),
   },
   {
     path: "/card-archive",
@@ -27,6 +27,21 @@ const routes = [
     name: "single-card-display",
     component: () => import("../views/DisplaySingleCard.vue"),
     props: true,
+  },
+  {
+    path: "/account-creation",
+    name: "account-creation",
+    component: () => import("../views/AccountCreation.vue"),
+  },
+  {
+    path: "/user-login",
+    name: "user-login",
+    component: () => import("../views/Login.vue"),
+  },
+  {
+    path: "/account-settings",
+    name: "account-settings",
+    component: () => import("../views/AccountSettings.vue"),
   },
 ];
 
