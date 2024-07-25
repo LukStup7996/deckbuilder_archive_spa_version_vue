@@ -1,5 +1,5 @@
 <?php
-namespace deckbuilder_archive_php_version_only\api\controller;
+namespace deckbuilder_archive_spa_version_vue\api\controller;
 
 use deckbuilder_archive_spa_version_vue\api\services\DeckArchiveService;
 use deckbuilder_archive_spa_version_vue\api\views\JsonView;

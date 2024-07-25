@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/return-in-computed-property -->
 <script>
 import { useCardApiStore } from "../stores/cardApiStore";
 
@@ -21,6 +20,7 @@ export default {
     };
   },
   computed: {
+    // eslint-disable-next-line vue/return-in-computed-property
     submitFilterOptions() {
       switch (this.selectedFilter) {
         case "card-name":
@@ -56,6 +56,7 @@ export default {
     filterCardNames(cardName) {
       this.cardApi.getCardsByName(cardName).then(() => {
         this.cards = this.cardApi.cards;
+        console.log(this.cards.cardId);
       });
     },
     filterSuperType(superType) {
@@ -83,6 +84,13 @@ export default {
         this.cards = this.cardApi.cards;
       });
     },
+    getImageUrl(cardId) {
+      try {
+        return require(`../assets/img/${cardId}.jpg`);
+      } catch (error) {
+        return require("../assets/img/default.jpg");
+      }
+    },
   },
 };
 </script>
@@ -109,9 +117,9 @@ export default {
             v-model="selectedFilter"
             :value="option.value"
           />
-          <label class="form-check-label" :for="option.value">{{
-            option.text
-          }}</label>
+          <label class="form-check-label" :for="option.value">
+            {{ option.text }}
+          </label>
         </li>
       </ul>
     </div>
@@ -139,7 +147,7 @@ export default {
           >
             <img
               class="card-img-top"
-              :src="require(`../assets/img/${card.cardId}.jpg`)"
+              :src="getImageUrl(card.cardId)"
               alt="card image cap"
             />
             <div class="card-body">

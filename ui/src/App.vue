@@ -82,6 +82,11 @@ const handleLogout = () => {
                     >Logout</a
                   >
                 </li>
+                <li>
+                  <RouterLink class="dropdown-item" to="/deck-creator"
+                    >Create Deck</RouterLink
+                  >
+                </li>
               </ul>
             </li>
             <li class="nav-item dropdown" v-else>
@@ -104,6 +109,11 @@ const handleLogout = () => {
                 <li>
                   <RouterLink class="dropdown-item" to="/account-creation"
                     >Create Account</RouterLink
+                  >
+                </li>
+                <li>
+                  <RouterLink class="dropdown-item" to="/deck-creator"
+                    >Create Deck</RouterLink
                   >
                 </li>
               </ul>
