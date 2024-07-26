@@ -1,11 +1,10 @@
 <script>
-import { useSandboxApiStore } from "@/stores/sandboxApiStore";
-import { useCardApiStore } from "@/stores/cardApiStore";
-
 export default {
   name: "sand-box",
   data() {
     return {
+      sandboxApi: this.useSandboxApiStore(),
+      cardApi: this.useCardApiStore(),
       searchQuery: "",
       searchResults: [],
       quantity: {},
@@ -17,12 +16,6 @@ export default {
     },
     deckFormat() {
       return this.sandboxApi.deckFormat;
-    },
-    sandboxApi() {
-      return useSandboxApiStore();
-    },
-    cardApi() {
-      return useCardApiStore();
     },
     mainTotal() {
       return this.sandboxApi.mainboard.reduce(
@@ -84,9 +77,6 @@ export default {
       }
     },
   },
-  mounted() {
-    this.sandboxApi.loadSessionData(this.sandboxApi.deckId);
-  },
 };
 </script>
 
@@ -94,8 +84,7 @@ export default {
   <div class="sandbox-container">
     <div class="deck-info bg-light mb-2 p-2 text-center">
       <h2>
-        {{ deckName ? deckName.deckName : "Deck Name" }} (Main: {{ mainTotal }},
-        Side: {{ sideTotal }}, Maybe: {{ maybeTotal }})
+        {{ deckName ? deckName.deckName : "Deck Name" }}
       </h2>
       <p>{{ deckFormat }}</p>
     </div>
@@ -121,11 +110,15 @@ export default {
       </div>
       <div class="main-container d-flex flex-column flex-grow-1">
         <div id="main" class="bg-danger p-3 mb-2 flex-grow-1">
-          Main Container
+          Main Deck {{ mainTotal }}
         </div>
         <div class="d-flex flex-column">
-          <div id="side" class="bg-primary p-3 mb-2">Side Container</div>
-          <div id="maybe" class="bg-success p-3">Maybe Container</div>
+          <div id="side" class="bg-primary p-3 mb-2">
+            Sideboard {{ sideTotal }}
+          </div>
+          <div id="maybe" class="bg-success p-3">
+            Maybeboard {{ maybeTotal }}
+          </div>
         </div>
       </div>
     </div>
