@@ -1,10 +1,11 @@
 <script>
+import { useSandboxApiStore } from "@/stores/sandboxApiStore";
+import { useCardApiStore } from "@/stores/cardApiStore";
+
 export default {
   name: "sand-box",
   data() {
     return {
-      sandboxApi: this.useSandboxApiStore(),
-      cardApi: this.useCardApiStore(),
       searchQuery: "",
       searchResults: [],
       quantity: {},
@@ -16,6 +17,12 @@ export default {
     },
     deckFormat() {
       return this.sandboxApi.deckFormat;
+    },
+    sandboxApi() {
+      return useSandboxApiStore();
+    },
+    cardApi() {
+      return useCardApiStore();
     },
     mainTotal() {
       return this.sandboxApi.mainboard.reduce(
@@ -39,11 +46,15 @@ export default {
   watch: {
     searchResults: {
       handler(newResults) {
-        newResults.forEach((card) => {
-          if (!this.quantity[card.cardId]) {
-            this.quantity[card.cardId] = 0;
-          }
-        });
+        if (Array.isArray(newResults)) {
+          newResults.forEach((card) => {
+            if (!this.quantity[card.cardId]) {
+              this.quantity[card.cardId] = 0;
+            }
+          });
+        } else {
+          console.error("searchResults ist kein Array:", newResults);
+        }
       },
       immediate: true,
     },
@@ -61,6 +72,7 @@ export default {
         this.quantity[cardId] = quantity;
         this.cardApi.fetchCardDetails(cardId).then(() => {
           const cardDetails = this.cardApi.card[0];
+          if (!cardDetails) return;
           const cardInfo = {
             card_name: cardDetails.cardName,
             mana_value: cardDetails.manaValue,
@@ -77,6 +89,9 @@ export default {
       }
     },
   },
+  mounted() {
+    this.sandboxApi.loadSessionData();
+  },
 };
 </script>
 
@@ -84,9 +99,9 @@ export default {
   <div class="sandbox-container">
     <div class="deck-info bg-light mb-2 p-2 text-center">
       <h2>
-        {{ deckName ? deckName.deckName : "Deck Name" }}
+        {{ deckName || "Deck Name" }} Decksize: ({{ mainTotal }}) Format:
+        {{ deckFormat }}
       </h2>
-      <p>{{ deckFormat }}</p>
     </div>
     <div class="content d-flex">
       <div class="sidebar bg-secondary text-white p-3">
@@ -110,14 +125,14 @@ export default {
       </div>
       <div class="main-container d-flex flex-column flex-grow-1">
         <div id="main" class="bg-danger p-3 mb-2 flex-grow-1">
-          Main Deck {{ mainTotal }}
+          Mainboard: ({{ mainTotal }})
         </div>
         <div class="d-flex flex-column">
           <div id="side" class="bg-primary p-3 mb-2">
-            Sideboard {{ sideTotal }}
+            Side Container: ({{ sideTotal }})
           </div>
           <div id="maybe" class="bg-success p-3">
-            Maybeboard {{ maybeTotal }}
+            Maybe Container: ({{ maybeTotal }})
           </div>
         </div>
       </div>
