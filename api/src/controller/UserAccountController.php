@@ -33,54 +33,36 @@ class UserAccountController
                 $emailInput = filter_input(INPUT_GET,"mailadress", FILTER_SANITIZE_EMAIL);
                 $passwordInput = filter_input(INPUT_GET,"password", FILTER_SANITIZE_STRING);
                 if($emailInput && $passwordInput){
-                    $jwt = $this->validateUserLogin($emailInput, $passwordInput);
-                    $this->jsonView->display($jwt);
-                }
-                break;
-            case 'logoutarchiver':
-                $state = $this->disconnectUser();
-                $this->jsonView->display($state);
-                break;
-            case 'getarchiver':
-                $jwt = $this->getBearerToken();
-                $userMail = $this->authenticate($jwt);
-                if($userMail !== "ERROR"){
-                    $this->jsonView->display($userMail);
-                }else{
-                    $errorM = "Could not get user";
-                    $this->jsonView->display($errorM);
+                    $this->validateUserLogin($emailInput, $passwordInput);
                 }
                 break;
             case 'updatearchivername':
+                $getMailAdress = filter_input(INPUT_GET,"mailadress", FILTER_SANITIZE_EMAIL);
+                $confirmPasswordInput = filter_input(INPUT_GET, "password", FILTER_SANITIZE_STRING);
                 $newNameInput = filter_input(INPUT_GET, "newusername", FILTER_SANITIZE_STRING);
-                $jwt = $this->getBearerToken();
-                $payload = $this->authenticate($jwt);
-                if($payload !== "ERROR"){
-                    $this->updateUserName($payload['user_id'], $newNameInput);
-                    $this->jsonView->display("Username updated successfully.");
-                }else{
-                    $errorM = "Could not change user name";
-                    $this->jsonView->display($errorM);
+                $archiveUser = $this->accountGateway->getUserByMailAdress($getMailAdress);
+                $legalityCheck = $this->verifyAccessLegality($archiveUser->user_id, $confirmPasswordInput);
+                if($legalityCheck !== null){
+                    $this->updateUserName($legalityCheck, $newNameInput);
                 }
                 break;
             case 'updatearchiverpassword':
+                $getMailAdress = filter_input(INPUT_GET,"mailadress", FILTER_SANITIZE_EMAIL);
+                $confirmPasswordInput = filter_input(INPUT_GET, "password", FILTER_SANITIZE_STRING);
                 $newPasswordInput = filter_input(INPUT_GET, "newpassword", FILTER_SANITIZE_STRING);
-                $jwt = $this->getBearerToken();
-                $payload = $this->authenticate($jwt);
-                if($payload !== "ERROR"){
-                    $this->updateUserPassword($payload['user_id'], $newPasswordInput);
-                    $this->jsonView->display("Password updated successfully.");
-                }else{
-                    $errorM = "Could not change user password";
-                    $this->jsonView->display($errorM);
+                $archiveUser = $this->accountGateway->getUserByMailAdress($getMailAdress);
+                $legalityCheck = $this->verifyAccessLegality($archiveUser->user_id, $confirmPasswordInput);
+                if($legalityCheck !== null){
+                    $this->updateUserPassword($legalityCheck, $newPasswordInput);
                 }
                 break;
             case 'deletearchiver':
+                $getMailAdress = filter_input(INPUT_GET,"mailadress", FILTER_SANITIZE_EMAIL);
                 $confirmPasswordInput = filter_input(INPUT_GET, "password", FILTER_SANITIZE_STRING);
-                $jwt = $this->getBearerToken();
-                $payload = $this->authenticate($jwt);
-                if($payload !== "ERROR" && $this->checkForDeletion($payload['user_id'], $confirmPasswordInput)){
-                    $this->terminateArchiveuser($payload['user_id']);
+                $archiveUser = $this->accountGateway->getUserByMailAdress($getMailAdress);
+                $checkLegality = $this->verifyAccessLegality($archiveUser->user_id, $confirmPasswordInput);
+                if($checkLegality == true){
+                    $this->terminateArchiveuser($getMailAdress);
                     $this->jsonView->display("User deleted successfully.");
                 } else {
                     $this->jsonView->display("Failed to delete user.");
@@ -91,20 +73,7 @@ class UserAccountController
                 $this->jsonView->display($errorM);                                
         }
     }
-
-    private function getBearerToken() {
-        $headers = apache_request_headers();
-        if (isset($headers['Authorization'])) {
-            $matches = [];
-            preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches);
-            if (isset($matches[1])) {
-                return $matches[1];
-            }
-        }
-        return null;
-    }
-
-    private function checkForDeletion($userId, $confirmPassword){
+    private function verifyAccessLegality($userId, $confirmPassword){
         $userData = $this->accountGateway->getUserByID($userId);
         if(password_verify($confirmPassword, $userData->user_password)){
             return true;
@@ -112,46 +81,31 @@ class UserAccountController
             return false;
         }
     }
-
+    private function validateUserLogin($mailAdres, $password){
+        if(!isset($_SESSION['user'])){
+            $userlogin = $this->accountGateway->getUserByMailAdress($mailAdres);
+            if(password_verify($password, $userlogin->user_password)){
+                $userToken = array(
+                    'user_id' => $userlogin->user_id,
+                    'user_name' => $userlogin->archive_name,
+                    'mail_adress' => $userlogin->mail_adress,
+                );
+                $this->jsonView->display($userToken);
+            }else{
+                $errorM = "Couldn't log you in";
+                $this->jsonView->display($errorM);
+            }
+        }
+    }
     private function createNewArchiver($mailAdress, $userName, $password){
-        $checkingForDuplicates = $this->checkForExistingDBEntries($mailAdress);
-        if($checkingForDuplicates !== null){
+        $newUserAccount = $this->accountGateway->createArchiveUser($mailAdress, $userName, $password);
+        if($newUserAccount){
+            $this->jsonView->display("New User: ".$mailAdress." ".$userName." has been created successfully.");
+        }else{
             $errorM = "This archiver already exists, please choose a different mail address.";
             $this->jsonView->display($errorM);
-        }else{
-            $this->accountGateway->createArchiveUser($mailAdress, $userName, $password);
-            $this->jsonView->display("New User: ".$mailAdress." ".$userName." has been created successfully.");
         }
     }
-
-    private function validateUserLogin($mailAdres, $password) {
-        $userlogin = $this->accountGateway->getUserByMailAdress($mailAdres);
-        if (password_verify($password, $userlogin->user_password)) {
-            $userToken = array(
-                'user_id' => $userlogin->user_id,
-                'user_name' => $userlogin->archive_name,
-                'mail_adress' => $userlogin->mail_adress,
-            );
-            return JwtHelper::createJwt($userToken);
-        } else {
-            return "ERROR";
-        }
-    }
-
-    public function authenticate($jwt) {
-        $payload = JwtHelper::validateJwt($jwt);
-        if ($payload) {
-            return $payload;
-        } else {
-            return "ERROR";
-        }
-    }
-
-    private function disconnectUser(){
-        // JWT is stateless, so no action needed for logout
-        return "OK";
-    }
-
     public function updateUserPassword($userId, $newPassword) {
         $success = $this->accountGateway->upadteUserPasswordByMailAdress($userId, $newPassword);
         if ($success) {
@@ -160,7 +114,6 @@ class UserAccountController
             $this->jsonView->display("Failed to update password.");
         }
     }
-
     public function updateUserName($userId, $newUserName) {
         $success = $this->accountGateway->updateArchiverNameByMailAdress($userId, $newUserName);
         if ($success) {
@@ -169,18 +122,15 @@ class UserAccountController
             $this->jsonView->display("Failed to update username.");
         }
     }
-
-    private function terminateArchiveuser($userId){
-        $success = $this->accountGateway->deleteArchiveUser($userId);
+    private function terminateArchiveuser($mailAdress){
+        $success = $this->accountGateway->deleteArchiveUser($mailAdress);
         if($success){ 
             $this->jsonView->display("User deleted successfully.");
         }else{
             $this->jsonView->display("No user found for deletion.");
         }
     }
-
     private function checkForExistingDBEntries($mailAdress){
         return $this->accountGateway->getUserByMailAdress($mailAdress); 
     }
 }
-
