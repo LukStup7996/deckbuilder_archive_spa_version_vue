@@ -19,10 +19,27 @@ class DeckBuilderService
     }
     public function deleteDecklistEntry($deckId){
         if($deckId){
+            $this->deckBuilderGateway->removeDeckContentsFromDB($deckId);
             $this->deckBuilderGateway->deleteDecklistEntry($deckId);
             return true;
         }else{
             return false;
         }
+    }
+    public function removeDeckContents($deckId){
+        $this->deckBuilderGateway->removeDeckContentsFromDB($deckId);
+        return true;
+    }
+    public function uploadMainDeckContents($cardId,$deckId,$quantity){
+        $this->deckBuilderGateway->pushMainDeckContentIntoDB($cardId,$deckId,$quantity);
+        return true;        
+    }
+    public function uploadSideDeckContents($cardId,$deckId,$quantity){
+        $this->deckBuilderGateway->pushSideDeckContentIntoDB($cardId,$deckId,$quantity);
+        return true;        
+    }
+    public function uploadMaybeDeckContents($cardId,$deckId,$quantity){
+        $this->deckBuilderGateway->pushMaybeDeckContentIntoDB($cardId,$deckId,$quantity);
+        return true;        
     }
 }

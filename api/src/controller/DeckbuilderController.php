@@ -1,6 +1,7 @@
 <?php
 namespace deckbuilder_archive_spa_version_vue\api\controller;
 
+use deckbuilder_archive_spa_version_vue\api\services\CardArchiveService;
 use deckbuilder_archive_spa_version_vue\api\services\DeckArchiveService;
 use deckbuilder_archive_spa_version_vue\api\views\JsonView;
 use deckbuilder_archive_spa_version_vue\api\services\DeckBuilderService;
@@ -12,11 +13,19 @@ class DeckbuilderController
     private $jsonView;
     private $deckBuilderService;
     private $deckArchiveService;
+    private $cardArchiveService;
+    private $maindeck;
+    private $sidedeck;
+    private $maybedeck;
 
     public function __construct(){
         $this->jsonView = new JsonView();
         $this->deckBuilderService = new DeckBuilderService();
+        $this->cardArchiveService =  new CardArchiveService();
         $this->deckArchiveService = new DeckArchiveService();
+        $this->maindeck = [];
+        $this->sidedeck = [];
+        $this->maybedeck = [];
     }
 
     public function route(){
@@ -28,8 +37,6 @@ class DeckbuilderController
                 $formatInput = filter_input(INPUT_GET, "format", FILTER_SANITIZE_STRING);
                 $this->createNewDecklist($userIdInput, $deckNameInput, $formatInput);
                 break;
-            case 'addcard':
-            case 'removecard':
             case 'updatedeck':
             case 'selectdeck':
                 $jwt = $this->getBearerToken();
@@ -52,7 +59,8 @@ class DeckbuilderController
                 }
                 break;
             case 'displaydeckcontent':
-                $this->deckBuilderEndcap();
+                $getDeckId = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_STRING);
+                $this->displayDeckContents($getDeckId);
                 break;
             default:
                 $errorM = "Unknown Action";
@@ -117,7 +125,56 @@ class DeckbuilderController
         }
         return null;
     }
-
+    private function fillSessionContent($deckId){
+        $this->setMainBoardContent($deckId);
+        $this->setSideBoardContent($deckId);
+        $this->setMaybeBoardContent($deckId);
+    }
+    private function setMainBoardContent($deckId){
+        $mainDeckContents = $this->deckArchiveService->displayMainDeckContent($deckId);
+        foreach($mainDeckContents as $card){
+            array_push($this->maindeck, $card);
+        }
+    }
+    private function setSideBoardContent($deckId){
+        $sideBoardContents = $this->deckArchiveService->displaySideBoardContent($deckId);
+        foreach($sideBoardContents as $card){
+            array_push($this->sidedeck, $card);
+        }
+    }
+    private function setMaybeBoardContent($deckId){
+        $maybeBoardContents = $this->deckArchiveService->displayMaybeBoardContent($deckId);
+        foreach($maybeBoardContents as $card){
+            array_push($this->maybedeck, $card);
+        }
+    }
+    private function displayDeckContents($deckId){
+        $this->fillSessionContent($deckId);
+        $mainDeckContents = [];
+        $sideDeckContents = [];
+        $maybeBoardContents = [];
+        foreach($this->maindeck as $cardId => $quantity){       
+            $mainInfo= $this->getCardData($cardId);
+            array_push($mainDeckContents, $mainInfo);
+        };
+        foreach($this->sidedeck as $cardId => $quantity){
+            $sideInfo= $this->getCardData($cardId);
+            array_push($sideDeckContents, $sideInfo);
+        };
+        foreach($this->maybedeck as $cardId => $quantity){
+            $maybeInfo= $this->getCardData($cardId);
+            array_push($maybeBoardContents, $maybeInfo);
+        };
+        $deckData = [];
+        $deckData['mainDeck'] = $mainDeckContents;
+        $deckData['sideDeck'] = $sideDeckContents;
+        $deckData['maybeDeck'] = $maybeBoardContents;
+        $this->jsonView->display($deckData);
+    }    
+    private function getCardData($cardId){
+        $cardInfo = $this->cardArchiveService->getCardsById($cardId);
+        return $cardInfo;
+    }
     public function authenticate($jwt) {
         $payload = JwtHelper::validateJwt($jwt);
         if ($payload) {
