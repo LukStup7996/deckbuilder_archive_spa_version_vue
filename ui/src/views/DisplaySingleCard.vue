@@ -4,6 +4,9 @@ import { useRoute } from "vue-router";
 
 export default {
   name: "DisplaySingleCard",
+  props: {
+    cardId: { type: String, required: true },
+  },
   data() {
     return {
       displayedCard: null,
@@ -12,6 +15,7 @@ export default {
   },
   computed: {
     card() {
+      // Da displayedCard null sein kann, stellen wir sicher, dass wir mit einem leeren Objekt arbeiten, um Fehler zu vermeiden.
       return this.displayedCard || {};
     },
   },
@@ -34,7 +38,7 @@ export default {
     },
   },
   mounted() {
-    this.route = useRoute();
+    this.route = useRoute(); // Zugriff auf route sicherstellen
     this.fetchCardData();
   },
 };

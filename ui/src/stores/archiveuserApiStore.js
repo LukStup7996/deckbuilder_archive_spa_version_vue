@@ -2,7 +2,8 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { getToken, saveToken, removeToken } from "@/utils/jwtHelper";
 
-const apiUrl = "http://localhost/deckbuilder_archive/api/index.php?action=";
+const apiUrl =
+  "http://localhost/deckbuilder_archive_spa_version_vue/api/index.php?action=";
 
 export const useArchiveuserApiStore = defineStore("archiveuserApi", {
   state: () => ({

@@ -8,8 +8,8 @@ const apiUrl = "http://localhost/deckbuilder_archive/api/index.php?action=";
 export const useSandboxApiStore = defineStore("sandboxApi", {
   state: () => ({
     deckId: null,
-    deckName: null,
-    deckFormat: null,
+    deckName: "",
+    deckFormat: "",
     mainboard: [],
     sideboard: [],
     maybeboard: [],
@@ -29,6 +29,8 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
           this.deckFormat = format;
           saveToken(response.data.token);
         } else {
+          this.deckName = deckName;
+          this.deckFormat = format;
           this.connectSuccess = false;
           console.error(
             "Fehler beim Erstellen eines neuen Decks:",
