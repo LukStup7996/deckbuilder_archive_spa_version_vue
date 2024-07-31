@@ -1,7 +1,6 @@
 // stores/sandboxApiStore.js
 import { defineStore } from "pinia";
 import axios from "axios";
-import { saveToken, getToken, removeToken } from "@/utils/jwtHelper";
 
 const apiUrl = "http://localhost/deckbuilder_archive/api/index.php?action=";
 
@@ -18,7 +17,6 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
   actions: {
     async createDeck(deckName, format) {
       try {
-        removeToken();
         const response = await axios.get(
           `${apiUrl}createdeck&deckname=${deckName}&format=${format}`
         );
@@ -27,7 +25,6 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
           this.deckId = response.data.deckId;
           this.deckName = deckName;
           this.deckFormat = format;
-          saveToken(response.data.token);
         } else {
           this.deckName = deckName;
           this.deckFormat = format;
@@ -44,11 +41,7 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
     },
     async loadSessionData() {
       try {
-        const token = getToken();
-        if (!token) throw new Error("Kein Token gefunden");
-        const response = await axios.get(`${apiUrl}displaydeckcontent`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(`${apiUrl}displaydeckcontent`);
         this.deckId = response.data.deckId;
         this.mainboard = response.data.mainDeck;
         this.sideboard = response.data.sideDeck;
@@ -59,7 +52,6 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
     },
     async deleteDeck(deckId) {
       try {
-        removeToken(); // JWT entfernen
         const response = await axios.post(
           `${apiUrl}deletedeck&deckid=${deckId}&confirm=Yes`
         );

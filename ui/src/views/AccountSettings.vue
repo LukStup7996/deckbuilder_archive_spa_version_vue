@@ -22,7 +22,7 @@ export default {
     ]),
     async updateName() {
       if (this.newUserName) {
-        await this.updateUserName(this.newUserName);
+        await this.updateUserName(this.confirmPassword, this.newUserName);
       }
     },
     async updatePassword() {
@@ -32,7 +32,7 @@ export default {
         this.newPassword.length >= 12 &&
         this.newPassword.length <= 16
       ) {
-        await this.updateUserPassword(this.newPassword);
+        await this.updateUserPassword(this.confirmPassword, this.newPassword);
       }
     },
     async deleteAccount() {
@@ -61,6 +61,12 @@ export default {
           <p>Username ändern?</p>
           <label>{{ userData.user_name }}</label>
           <input v-model="newUserName" type="text" class="form-control" />
+          <input
+            v-model="confirmPassword"
+            type="password"
+            class="form-control"
+            placeholder="Password"
+          />
           <button @click="updateName" class="btn btn-primary">
             Update Name
           </button>

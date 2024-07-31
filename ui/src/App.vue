@@ -1,18 +1,11 @@
 <script setup>
-import { RouterLink, useRouter } from "vue-router";
-import { ref } from "vue";
+import { RouterLink } from "vue-router";
 import { useArchiveuserApiStore } from "@/stores/archiveuserApiStore";
-import { getToken, removeToken } from "@/utils/jwtHelper";
 
-const store = useArchiveuserApiStore();
-const router = useRouter();
-const isAuthenticated = ref(!!getToken());
+const userStore = useArchiveuserApiStore();
 
 const handleLogout = () => {
-  store.logoutUser();
-  removeToken();
-  isAuthenticated.value = false;
-  router.push("/");
+  userStore.logoutUser();
 };
 </script>
 
@@ -56,7 +49,7 @@ const handleLogout = () => {
                 >Card Archive</RouterLink
               >
             </li>
-            <li class="nav-item dropdown" v-if="isAuthenticated">
+            <li class="nav-item dropdown" v-if="userStore.loginStatus == true">
               <a
                 class="nav-link dropdown-toggle"
                 href="#"
