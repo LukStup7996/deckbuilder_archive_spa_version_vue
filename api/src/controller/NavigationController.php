@@ -47,8 +47,6 @@ class NavigationController
                 break;    
             case 'createarchiver':
             case 'loginarchiver':
-            case 'logoutarchiver':
-            case 'getarchiver':
             case 'updatearchivername':
             case 'updatearchiverpassword':    
             case 'deletearchiver':
