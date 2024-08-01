@@ -52,10 +52,10 @@ class NavigationController
                 $this->handleAccount();
                 break;
             case 'createdeck':
-            case 'updatedeck':
+            case 'addcard':
+            case 'removecard':
             case 'selectdeck':
             case 'deletedeck':
-            case 'displaydeckcontent':
                 $this->buildDeck();
                 break;    
             default:

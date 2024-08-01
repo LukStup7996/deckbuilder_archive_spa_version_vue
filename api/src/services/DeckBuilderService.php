@@ -34,12 +34,24 @@ class DeckBuilderService
         $this->deckBuilderGateway->pushMainDeckContentIntoDB($cardId,$deckId,$quantity);
         return true;        
     }
+    public function removeMainDeckContents($cardId,$deckId){
+        $this->deckBuilderGateway->removeMainDeckContent($cardId,$deckId);
+        return true;        
+    }
     public function uploadSideDeckContents($cardId,$deckId,$quantity){
         $this->deckBuilderGateway->pushSideDeckContentIntoDB($cardId,$deckId,$quantity);
         return true;        
     }
+    public function removeSideDeckContents($cardId,$deckId){
+        $this->deckBuilderGateway->removeSideDeckContent($cardId,$deckId);
+        return true;        
+    }
     public function uploadMaybeDeckContents($cardId,$deckId,$quantity){
         $this->deckBuilderGateway->pushMaybeDeckContentIntoDB($cardId,$deckId,$quantity);
+        return true;        
+    }
+    public function removeMaybeDeckContents($cardId,$deckId){
+        $this->deckBuilderGateway->removeMaybeDeckContent($cardId,$deckId);
         return true;        
     }
 }
