@@ -6,7 +6,6 @@ use deckbuilder_archive_spa_version_vue\api\services\DeckArchiveService;
 use deckbuilder_archive_spa_version_vue\api\views\JsonView;
 use deckbuilder_archive_spa_version_vue\api\services\DeckBuilderService;
 use deckbuilder_archive_spa_version_vue\api\DTOs\OwnedDeckDTO;
-use deckbuilder_archive_spa_version_vue\api\config\JwtHelper;
 
 class DeckbuilderController
 {
@@ -37,30 +36,64 @@ class DeckbuilderController
                 $formatInput = filter_input(INPUT_GET, "format", FILTER_SANITIZE_STRING);
                 $this->createNewDecklist($userIdInput, $deckNameInput, $formatInput);
                 break;
-            case 'updatedeck':
+            case 'addcard':
+                $userIdInput = filter_input(INPUT_GET, "userid", FILTER_SANITIZE_NUMBER_INT);
+                $cardIdInput = filter_input(INPUT_GET, "cardid", FILTER_SANITIZE_STRING);
+                $deckIdInput = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_NUMBER_INT);
+                $quantityInput = filter_input(INPUT_GET, "quantity", FILTER_SANITIZE_NUMBER_INT);
+                $defineSideBoard = filter_input(INPUT_GET, "sideboard", FILTER_SANITIZE_STRING);
+                $defindeMaybeBoard = filter_input(INPUT_GET, "maybeboard", FILTER_SANITIZE_STRING);
+                $confirmLegality = $this->verifyDeckLegalityForArchiver($userIdInput, $deckIdInput);
+                if($confirmLegality && $defineSideBoard == "No" && $defindeMaybeBoard == "No"){
+                    $this->addCardToMainboard($cardIdInput, $deckIdInput, $quantityInput);
+                }elseif($confirmLegality && $defineSideBoard == "Yes" && $defindeMaybeBoard == "No"){
+                    $this->addCardToSideboard($cardIdInput, $deckIdInput, $quantityInput);
+                }elseif($confirmLegality && $defineSideBoard == "No" && $defindeMaybeBoard == "Yes"){
+                    $this->addCardToMaybeboard($cardIdInput, $deckIdInput, $quantityInput);
+                }
+                break;
+            case 'removecard':
+                $userIdInput = filter_input(INPUT_GET, "userid", FILTER_SANITIZE_NUMBER_INT);
+                $cardIdInput = filter_input(INPUT_GET, "cardid", FILTER_SANITIZE_STRING);
+                $deckIdInput = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_NUMBER_INT);
+                $defineSideBoard = filter_input(INPUT_GET, "sideboard", FILTER_SANITIZE_STRING);
+                $defindeMaybeBoard = filter_input(INPUT_GET, "maybeboard", FILTER_SANITIZE_STRING);
+                $confirmLegality = $this->verifyDeckLegalityForArchiver($userIdInput, $deckIdInput);
+                if($confirmLegality && $defineSideBoard == "No" && $defindeMaybeBoard == "No"){
+                    $this->removeCardFromMainboard($cardIdInput, $deckIdInput);
+                    $succesM = "Successfully removed card";
+                    $this->jsonView->display($succesM); 
+                }elseif($confirmLegality && $defineSideBoard == "Yes" && $defindeMaybeBoard == "No"){
+                    $this->removeCardFromSideboard($cardIdInput, $deckIdInput);
+                    $succesM = "Successfully removed card";
+                    $this->jsonView->display($succesM);
+                }elseif($confirmLegality && $defineSideBoard == "No" && $defindeMaybeBoard == "Yes"){
+                    $this->removeCardFromSideboard($cardIdInput, $deckIdInput);
+                    $succesM = "Successfully removed card";
+                    $this->jsonView->display($succesM);
+                }else{
+                    $errorM = "Couldn't removed card";
+                    $this->jsonView->display($errorM);
+                }
+                break;        
             case 'selectdeck':
-                $jwt = $this->getBearerToken();
-                $payload = $this->authenticate($jwt);
-                if ($payload !== "ERROR") {
-                    $this->verifyDeckLegalityForArchiver($payload['user_id'], $payload['deck_id']);
-                } else {
-                    $this->jsonView->display("Invalid or expired token.");
+                $userIdInput = filter_input(INPUT_GET, "userid", FILTER_SANITIZE_NUMBER_INT);
+                $deckIdInput = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_NUMBER_INT);
+                $confirmLegality = $this->verifyDeckLegalityForArchiver($userIdInput, $deckIdInput);
+                if($confirmLegality){
+                    $this->displayDeckContents($deckIdInput);
                 }
                 break;
             case 'deletedeck':
-                $getDeckId = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_STRING);
+                $userIdInput = filter_input(INPUT_GET, "userid", FILTER_SANITIZE_NUMBER_INT);
+                $deckIdInput = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_NUMBER_INT);
                 $confirmTermination = filter_input(INPUT_GET, "confirm", FILTER_SANITIZE_STRING);
-                $jwt = $this->getBearerToken();
-                $payload = $this->authenticate($jwt);
-                if ($payload !== "ERROR" && $payload['deck_id'] == $getDeckId) {
-                    $this->deleteDecklist($getDeckId, $confirmTermination);
+                $confirmLegality = $this->verifyDeckLegalityForArchiver($userIdInput, $deckIdInput);
+                if ($confirmLegality == $deckIdInput) {
+                    $this->deleteDecklist($deckIdInput, $confirmTermination);
                 } else {
                     $this->jsonView->display("Invalid or expired token, or deck ID mismatch.");
                 }
-                break;
-            case 'displaydeckcontent':
-                $getDeckId = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_STRING);
-                $this->displayDeckContents($getDeckId);
                 break;
             default:
                 $errorM = "Unknown Action";
@@ -71,35 +104,31 @@ class DeckbuilderController
     private function createNewDecklist($userId, $deckName, $format){
         if ($userId) {
             $newDeckList = $this->deckBuilderService->createDecklist($userId, $deckName, $format);
-            $jwt = JwtHelper::createJwt(['user_id' => $userId, 'deck_id' => $newDeckList->deck_id]);
-            $this->jsonView->display(["message" => "Deck created successfully.", "token" => $jwt]);
+            $this->jsonView->display($newDeckList);
         } else {
             $errorM = "You need to be logged in in order to use our services.";
             $this->jsonView->display($errorM);
         }
     }
 
-    private function verifyDeckLegalityForArchiver($userIdInput, $deckIdInput){
-        $listOfOwnedDecks = $this->deckArchiveService->checkForUserCreatedDBContent($userIdInput);
+    public function verifyDeckLegalityForArchiver($userId, $deckId) {
+        $listOfOwnedDecks = $this->deckArchiveService->checkForUserCreatedDBContent($userId);
         $dtoList = [];
         foreach ($listOfOwnedDecks as $owned) {
             $dtoList[] = OwnedDeckDTO::map($owned);
         }
-
         $belongsToUser = false;
-        foreach ($dtoList as $ownedDecklist) {
-            if ($ownedDecklist->deckId == $deckIdInput) {
+        foreach ($dtoList as $ownedDeck) {
+            if ($ownedDeck->deckId == $deckId) {
                 $belongsToUser = true;
                 break;
             }
         }
-
         if ($belongsToUser) {
-            $jwt = JwtHelper::createJwt(['user_id' => $userIdInput, 'deck_id' => $deckIdInput]);
-            $this->jsonView->display(["message" => "Deck selected successfully.", "token" => $jwt]);
+            return $deckId;
         } else {
-            $errorM = "No deck by your chosen ID could be affiliated to your user.";
-            $this->jsonView->display($errorM);
+            $errorMessage = "No deck by your chosen ID could be affiliated to you.";
+            $this->jsonView->display($errorMessage);
         }
     }
 
@@ -114,58 +143,51 @@ class DeckbuilderController
         }
     }
 
-    private function getBearerToken() {
-        $headers = apache_request_headers();
-        if (isset($headers['Authorization'])) {
-            $matches = [];
-            preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches);
-            if (isset($matches[1])) {
-                return $matches[1];
-            }
-        }
-        return null;
-    }
-    private function fillSessionContent($deckId){
+    private function getDeckContents($deckId){
         $this->setMainBoardContent($deckId);
         $this->setSideBoardContent($deckId);
         $this->setMaybeBoardContent($deckId);
     }
     private function setMainBoardContent($deckId){
+        $this->maindeck = [];
         $mainDeckContents = $this->deckArchiveService->displayMainDeckContent($deckId);
         foreach($mainDeckContents as $card){
             array_push($this->maindeck, $card);
         }
     }
     private function setSideBoardContent($deckId){
+        $this->sidedeck = [];
         $sideBoardContents = $this->deckArchiveService->displaySideBoardContent($deckId);
         foreach($sideBoardContents as $card){
             array_push($this->sidedeck, $card);
         }
     }
     private function setMaybeBoardContent($deckId){
+        $this->maybedeck = [];
         $maybeBoardContents = $this->deckArchiveService->displayMaybeBoardContent($deckId);
         foreach($maybeBoardContents as $card){
             array_push($this->maybedeck, $card);
         }
     }
     private function displayDeckContents($deckId){
-        $this->fillSessionContent($deckId);
+        $this->getDeckContents($deckId);
         $mainDeckContents = [];
         $sideDeckContents = [];
         $maybeBoardContents = [];
-        foreach($this->maindeck as $cardId => $quantity){       
-            $mainInfo= $this->getCardData($cardId);
+        foreach($this->maindeck as $mainInfo => $quantity){       
+            $mainInfo= $this->getCardData($mainInfo);
             array_push($mainDeckContents, $mainInfo);
         };
-        foreach($this->sidedeck as $cardId => $quantity){
-            $sideInfo= $this->getCardData($cardId);
+        foreach($this->sidedeck as $sideInfo => $quantity){
+            $sideInfo= $this->getCardData($sideInfo);
             array_push($sideDeckContents, $sideInfo);
         };
-        foreach($this->maybedeck as $cardId => $quantity){
-            $maybeInfo= $this->getCardData($cardId);
+        foreach($this->maybedeck as $maybeInfo => $quantity){
+            $maybeInfo= $this->getCardData($maybeInfo);
             array_push($maybeBoardContents, $maybeInfo);
         };
         $deckData = [];
+        $deckData['deckId'] = $deckId;
         $deckData['mainDeck'] = $mainDeckContents;
         $deckData['sideDeck'] = $sideDeckContents;
         $deckData['maybeDeck'] = $maybeBoardContents;
@@ -175,17 +197,46 @@ class DeckbuilderController
         $cardInfo = $this->cardArchiveService->getCardsById($cardId);
         return $cardInfo;
     }
-    public function authenticate($jwt) {
-        $payload = JwtHelper::validateJwt($jwt);
-        if ($payload) {
-            return $payload;
-        } else {
-            return "ERROR";
-        }
-    }
-
-    private function deckBuilderEndcap(){
-        $succesM = "You have successfully accessed deckbuilding services.";
+    private function addCardToMainboard($cardId, $deckId, $quantity) {
+       $this->removeCardFromMainboard($cardId, $deckId);
+       $success = $this->deckBuilderService->uploadMainDeckContents($cardId, $deckId, $quantity);
+       if($success){
+        $succesM = "Successfully added card";
         $this->jsonView->display($succesM);
+       }else{
+        $errorM = "Could not add card";
+        $this->jsonView->display($errorM);
+       }
     }
+    private function removeCardFromMainboard($cardId, $deckId) {
+        $this->deckBuilderService->removeMainDeckContents($cardId, $deckId);
+    }
+    private function addCardToSideboard($cardId, $deckId, $quantity) {
+        $this->removeCardFromSideboard($cardId, $deckId);
+        $success = $this->deckBuilderService->uploadMainDeckContents($cardId, $deckId, $quantity);
+        if($success){
+            $succesM = "Successfully added card";
+            $this->jsonView->display($succesM);
+           }else{
+            $errorM = "Could not add card";
+            $this->jsonView->display($errorM);
+           }
+    }
+    private function removeCardFromSideboard($cardId, $deckId) {
+        $this->deckBuilderService->removeSideDeckContents($cardId, $deckId);
+     }
+    private function addCardToMaybeboard($cardId, $deckId, $quantity) {
+        $this->removeCardFromMaybeboard($cardId, $deckId);
+        $success = $this->deckBuilderService->uploadMainDeckContents($cardId, $deckId, $quantity);
+        if($success){
+            $succesM = "Successfully added card";
+            $this->jsonView->display($succesM);
+           }else{
+            $errorM = "Could not add card";
+            $this->jsonView->display($errorM);
+           }
+    }
+    private function removeCardFromMaybeboard($cardId, $deckId) {
+        $this->deckBuilderService->removeMaybeDeckContents($cardId, $deckId);
+    } 
 }

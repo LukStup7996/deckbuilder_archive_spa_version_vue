@@ -39,19 +39,23 @@ class AccessDeckArchiveFromDBGateway
     }
     public function displaySideBoardContent($deckId){
         $sideBoard = "Yes";
-        $sql = "SELECT card_id, deck_id, quantity, side_board, maybe_board FROM cards_decklists WHERE deck_id = :deckId AND side_board = :sideBoard ORDER BY card_id, side_board, maybe_board";
+        $maybeBoard = "No";
+        $sql = "SELECT card_id, deck_id, quantity, side_board, maybe_board FROM cards_decklists WHERE deck_id = :deckId AND side_board = :sideBoard AND maybe_board = :maybeBoard ORDER BY card_id, side_board, maybe_board";
         $statement = $this->pdo->prepare($sql);
         $statement->bindParam(':deckId', $deckId);
         $statement->bindParam(':sideBoard', $sideBoard);
+        $statement->bindParam(':maybeBoard', $maybeBoard);
         $statement->execute();
         $listOfMainDeckContents = $statement->fetchAll(PDO::FETCH_ASSOC);
         return $this->mapAllDeckContents($listOfMainDeckContents);
     }
     public function displayMaybeBoardContent($deckId){
+        $sideBoard = "No";
         $maybeBoard = "Yes";
-        $sql = "SELECT card_id, deck_id, quantity, side_board, maybe_board FROM cards_decklists WHERE deck_id = :deckId AND maybe_board = :maybeBoard ORDER BY card_id, side_board, maybe_board";
+        $sql = "SELECT card_id, deck_id, quantity, side_board, maybe_board FROM cards_decklists WHERE deck_id = :deckId AND side_board = :sideBoard AND maybe_board = :maybeBoard ORDER BY card_id, side_board, maybe_board";
         $statement = $this->pdo->prepare($sql);
         $statement->bindParam(':deckId', $deckId);
+        $statement->bindParam(':sideBoard', $sideBoard);
         $statement->bindParam(':maybeBoard', $maybeBoard);
         $statement->execute();
         $listOfMainDeckContents = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -72,7 +76,7 @@ class AccessDeckArchiveFromDBGateway
     public function mapAllDeckContents(array $listOfContents){
         $return = [];
         foreach($listOfContents as $card){
-            $sqlFetchCardInfo = "SELECT cards.card_name, cards.card_id, cards.card_type, cards.sub_type, cards.super_type, cards.mana_value, cards.cmc, cards_decklists.quantity FROM cards INNER JOIN cards_decklists ON cards.card_id = cards_decklists.card_id WHERE cards.card_id = :cardId ORDER BY cards.card_type";
+            $sqlFetchCardInfo = "SELECT cards.card_name, cards.card_id, cards.card_type, cards.sub_type, cards.super_type, cards.mana_value, cards.cmc, cards_decklists.quantity FROM cards INNER JOIN cards_decklists ON cards.card_id = cards_decklists.card_id WHERE cards.card_id = :cardId";
             $statement = $this->pdo->prepare($sqlFetchCardInfo);
             $statement->bindParam(':cardId',$card['card_id']);
             $statement->execute();
