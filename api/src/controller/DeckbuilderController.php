@@ -148,25 +148,33 @@ class DeckbuilderController
         $this->setSideBoardContent($deckId);
         $this->setMaybeBoardContent($deckId);
     }
-    private function setMainBoardContent($deckId){
+    private function setMainBoardContent($deckId) {
         $this->maindeck = [];
         $mainDeckContents = $this->deckArchiveService->displayMainDeckContent($deckId);
-        foreach($mainDeckContents as $card){
-            array_push($this->maindeck, $card);
+        foreach($mainDeckContents as $card) {
+            $cardId = $card->cardId;
+            $quantity = $card->quantity;
+            $this->maindeck[$cardId] = $quantity;
         }
     }
-    private function setSideBoardContent($deckId){
+
+    private function setSideBoardContent($deckId) {
         $this->sidedeck = [];
         $sideBoardContents = $this->deckArchiveService->displaySideBoardContent($deckId);
-        foreach($sideBoardContents as $card){
-            array_push($this->sidedeck, $card);
+        foreach($sideBoardContents as $card) {
+            $cardId = $card->cardId;
+            $quantity = $card->quantity;
+            $this->sidedeck[$cardId] = $quantity;
         }
     }
-    private function setMaybeBoardContent($deckId){
+
+    private function setMaybeBoardContent($deckId) {
         $this->maybedeck = [];
         $maybeBoardContents = $this->deckArchiveService->displayMaybeBoardContent($deckId);
-        foreach($maybeBoardContents as $card){
-            array_push($this->maybedeck, $card);
+        foreach($maybeBoardContents as $card) {
+            $cardId = $card->cardId;
+            $quantity = $card->quantity;
+            $this->maybedeck[$cardId] = $quantity;
         }
     }
     private function displayDeckContents($deckId){
@@ -176,7 +184,9 @@ class DeckbuilderController
         $maybeBoardContents = [];
         foreach($this->maindeck as $mainInfo => $quantity){       
             $mainInfo= $this->getCardData($mainInfo);
-            array_push($mainDeckContents, $mainInfo);
+            if($mainInfo) {
+                array_push($mainDeckContents, $mainInfo);
+            }
         };
         foreach($this->sidedeck as $sideInfo => $quantity){
             $sideInfo= $this->getCardData($sideInfo);
@@ -224,7 +234,7 @@ class DeckbuilderController
     }
     private function removeCardFromSideboard($cardId, $deckId) {
         $this->deckBuilderService->removeSideDeckContents($cardId, $deckId);
-     }
+    }
     private function addCardToMaybeboard($cardId, $deckId, $quantity) {
         $this->removeCardFromMaybeboard($cardId, $deckId);
         $success = $this->deckBuilderService->uploadMainDeckContents($cardId, $deckId, $quantity);

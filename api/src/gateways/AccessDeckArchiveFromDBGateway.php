@@ -25,7 +25,8 @@ class AccessDeckArchiveFromDBGateway
         $statement->execute();
         $listOfOwnedDecks = $statement->fetchAll(PDO::FETCH_ASSOC);
         return $this->mapAllDecklists($listOfOwnedDecks);
-    }public function displayMainDeckContent($deckId){
+    }
+    public function displayMainDeckContent($deckId){
         $sideBoard = "No";
         $maybeBoard = "No";
         $sql = "SELECT card_id, deck_id, quantity, side_board, maybe_board FROM cards_decklists WHERE deck_id = :deckId AND side_board = :sideBoard AND maybe_board = :maybeBoard ORDER BY card_id, side_board, maybe_board";
