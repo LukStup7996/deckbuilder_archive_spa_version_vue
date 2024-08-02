@@ -184,17 +184,19 @@ class DeckbuilderController
         $maybeBoardContents = [];
         foreach($this->maindeck as $mainInfo => $quantity){       
             $mainInfo= $this->getCardData($mainInfo);
-            if($mainInfo) {
-                array_push($mainDeckContents, $mainInfo);
-            }
+            array_push($mainDeckContents, $mainInfo);
+            array_push($mainDeckContents, $quantity);
         };
         foreach($this->sidedeck as $sideInfo => $quantity){
             $sideInfo= $this->getCardData($sideInfo);
             array_push($sideDeckContents, $sideInfo);
+            array_push($sideDeckContents, $quantity);
         };
         foreach($this->maybedeck as $maybeInfo => $quantity){
             $maybeInfo= $this->getCardData($maybeInfo);
             array_push($maybeBoardContents, $maybeInfo);
+            array_push($maybeBoardContents, $quantity);
+
         };
         $deckData = [];
         $deckData['deckId'] = $deckId;
