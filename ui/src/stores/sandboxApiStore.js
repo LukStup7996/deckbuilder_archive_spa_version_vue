@@ -2,11 +2,12 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 
-const apiUrl = "http://localhost/deckbuilder_archive/api/index.php?action=";
+const apiUrl =
+  "http://localhost/deckbuilder_archive_spa_version_vue/api/index.php?action=";
 
 export const useSandboxApiStore = defineStore("sandboxApi", {
   state: () => ({
-    deckId: null,
+    deckId: "",
     deckName: "",
     deckFormat: "",
     mainboard: [],
@@ -15,58 +16,149 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
     connectSuccess: false,
   }),
   actions: {
-    async createDeck(deckName, format) {
+    async createDeck(userId, deckName, format) {
       try {
         const response = await axios.get(
-          `${apiUrl}createdeck&deckname=${deckName}&format=${format}`
+          `${apiUrl}createdeck&userid=${userId}&deckname=${deckName}&format=${format}`
         );
-        if (response.data.message === "Deck created successfully.") {
-          this.connectSuccess = true;
-          this.deckId = response.data.deckId;
-          this.deckName = deckName;
-          this.deckFormat = format;
+        if (response.data) {
+          this.$state.connectSuccess = true;
+          console.log(this.connectSuccess);
+          this.$state.deckId = response.data.deckId;
+          console.log(this.deckId);
+          this.$state.deckName = deckName;
+          console.log(this.deckName);
+          this.$state.deckFormat = format;
+          console.log(this.deckFormat);
         } else {
-          this.deckName = deckName;
-          this.deckFormat = format;
-          this.connectSuccess = false;
+          this.$state.deckName = deckName;
+          console.log(this.deckName);
+          this.$state.deckFormat = format;
+          console.log(this.deckFormat);
+          this.$state.connectSuccess = false;
+          console.log(this.connectSuccess);
           console.error(
-            "Fehler beim Erstellen eines neuen Decks:",
+            "An error has occurred while trying to create a deck:",
             response.data.message
           );
         }
       } catch (error) {
-        this.connectSuccess = false;
-        console.error("Fehler beim Erstellen eines neuen Decks:", error);
+        this.$state.connectSuccess = false;
+        console.error(
+          "An error has occurred while trying to create a deck:",
+          error
+        );
       }
     },
-    async loadSessionData() {
+    async loadSessionData(userId, deckId) {
+      this.$state.connectSuccess = false;
       try {
-        const response = await axios.get(`${apiUrl}displaydeckcontent`);
-        this.deckId = response.data.deckId;
-        this.mainboard = response.data.mainDeck;
-        this.sideboard = response.data.sideDeck;
-        this.maybeboard = response.data.maybeDeck;
+        const response = await axios.get(
+          `${apiUrl}selectdeck&userid=${userId}&deckId=${deckId}`
+        );
+        this.$state.connectSuccess = true;
+        console.log(this.connectSuccess);
+        this.$state.deckId = response.data.deckId;
+        console.log(this.deckId);
+        this.$state.mainboard = response.data.mainDeck;
+        console.log(this.mainboard);
+        this.$state.sideboard = response.data.sideDeck;
+        console.log(this.sideboard);
+        this.$state.maybeboard = response.data.maybeDeck;
+        console.log(this.maybeboard);
       } catch (error) {
-        console.error("Fehler beim Laden der Sitzungsdaten:", error);
+        console.error(
+          "An error has occurred trying to load your deck data:",
+          error
+        );
       }
     },
-    async deleteDeck(deckId) {
+    async addCardToDBCardsDecklists(
+      userId,
+      cardId,
+      deckId,
+      quantity,
+      sideBoard,
+      maybeBoard
+    ) {
+      this.$state.connectSuccess = false;
       try {
         const response = await axios.post(
-          `${apiUrl}deletedeck&deckid=${deckId}&confirm=Yes`
+          `${apiUrl}addcard&userid=${userId}&cardid=${cardId}&deckid=${deckId}&quantity=${quantity}&sideboard=${sideBoard}&maybeboard=${maybeBoard}`
         );
-        if (response.data === "Successfully deleted decklist.") {
-          this.deckId = null;
-          this.deckName = null;
-          this.deckFormat = null;
-          this.mainboard = [];
-          this.sideboard = [];
-          this.maybeboard = [];
+        if (response.data) {
+          this.$state.connectSuccess = true;
+          this.$state.deckId = "";
+          this.$state.deckName = "";
+          this.$state.deckFormat = "";
+          this.$state.mainboard = [];
+          this.$state.sideboard = [];
+          this.$state.maybeboard = [];
+          this.loadSessionData(userId, deckId);
         } else {
-          console.error("Fehler beim Löschen des Decks:", response.data);
+          console.error("Couldn't find response data:", response.data);
         }
       } catch (error) {
-        console.error("Fehler beim Löschen des Decks:", error);
+        console.error(
+          "There has been an issue with adding your cards to the decklist.",
+          error
+        );
+      }
+    },
+    async removeCardFromDBCardsDecklists(
+      userId,
+      cardId,
+      deckId,
+      quantity,
+      sideBoard,
+      maybeBoard
+    ) {
+      this.$state.connectSuccess = false;
+      try {
+        const response = await axios.post(
+          `${apiUrl}removecard&userid=${userId}&cardid=${cardId}&deckid=${deckId}&quantity=${quantity}&sideboard=${sideBoard}&maybeboard=${maybeBoard}`
+        );
+        if (response.data) {
+          this.$state.connectSuccess = true;
+          this.$state.deckId = "";
+          this.$state.deckName = "";
+          this.$state.deckFormat = "";
+          this.$state.mainboard = [];
+          this.$state.sideboard = [];
+          this.$state.maybeboard = [];
+          this.loadSessionData(userId, deckId);
+        } else {
+          console.error("Couldn't find response data:", response.data);
+        }
+      } catch (error) {
+        console.error(
+          "There has been an issue with removing your cards from the decklist.",
+          error
+        );
+      }
+    },
+    async deleteDeck(userId, deckId) {
+      this.$state.connectSuccess = false;
+      try {
+        const response = await axios.post(
+          `${apiUrl}deletedeck&userid=${userId}&deckid=${deckId}&confirm=Yes`
+        );
+        if (response.data === "Successfully deleted decklist.") {
+          this.$state.connectSuccess = true;
+          this.$state.deckId = "";
+          this.$state.deckName = "";
+          this.$state.deckFormat = "";
+          this.$state.mainboard = [];
+          this.$state.sideboard = [];
+          this.$state.maybeboard = [];
+        } else {
+          console.error("Couldn't find response data:", response.data);
+        }
+      } catch (error) {
+        console.error(
+          "An error occurred while trying to delete your decklist:",
+          error
+        );
       }
     },
   },
