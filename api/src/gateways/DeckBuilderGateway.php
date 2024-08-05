@@ -50,6 +50,18 @@ class DeckBuilderGateway
         $statement->execute();
         return $statement->rowCount() > 0;  
     }
+    public function removeMainDeckContent($cardId,$deckId){
+        $sideBoard = "No";
+        $maybeBoard = "No";
+        $sql = "DELETE FROM cards_decklists WHERE card_id = :card_id AND deck_id = :deck_id AND side_board = :side_board AND maybe_board = :maybe_board";
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindParam(':card_id',$cardId);
+        $statement->bindParam(':deck_id',$deckId);
+        $statement->bindParam(':side_board',$sideBoard);
+        $statement->bindParam(':maybe_board',$maybeBoard);
+        $statement->execute();
+        return $statement->rowCount() > 0;  
+    }
     public function pushSideDeckContentIntoDB($cardId,$deckId,$quantity){
         $sideBoard = "Yes";
         $maybeBoard = "No";
@@ -63,6 +75,18 @@ class DeckBuilderGateway
         $statement->execute();
         return $statement->rowCount() > 0;  
     }
+    public function removeSideDeckContent($cardId,$deckId){
+        $sideBoard = "Yes";
+        $maybeBoard = "No";
+        $sql = "DELETE FROM cards_decklists WHERE card_id = :card_id AND deck_id = :deck_id AND side_board = :side_board AND maybe_board = :maybe_board";
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindParam(':card_id',$cardId);
+        $statement->bindParam(':deck_id',$deckId);
+        $statement->bindParam(':side_board',$sideBoard);
+        $statement->bindParam(':maybe_board',$maybeBoard);
+        $statement->execute();
+        return $statement->rowCount() > 0;  
+    }
     public function pushMaybeDeckContentIntoDB($cardId,$deckId,$quantity){
         $sideBoard = "No";
         $maybeBoard = "Yes";
@@ -71,6 +95,18 @@ class DeckBuilderGateway
         $statement->bindParam(':card_id',$cardId);
         $statement->bindParam(':deck_id',$deckId);
         $statement->bindParam(':quantity',$quantity);
+        $statement->bindParam(':side_board',$sideBoard);
+        $statement->bindParam(':maybe_board',$maybeBoard);
+        $statement->execute();
+        return $statement->rowCount() > 0;  
+    }
+    public function removeMaybeDeckContent($cardId,$deckId){
+        $sideBoard = "No";
+        $maybeBoard = "Yes";
+        $sql = "DELETE FROM cards_decklists WHERE card_id = :card_id AND deck_id = :deck_id AND side_board = :side_board AND maybe_board = :maybe_board";
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindParam(':card_id',$cardId);
+        $statement->bindParam(':deck_id',$deckId);
         $statement->bindParam(':side_board',$sideBoard);
         $statement->bindParam(':maybe_board',$maybeBoard);
         $statement->execute();

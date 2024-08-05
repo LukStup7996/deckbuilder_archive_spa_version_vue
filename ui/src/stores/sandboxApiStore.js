@@ -17,18 +17,19 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
   }),
   actions: {
     async createDeck(userId, deckName, format) {
+      console.log(this.userId);
       try {
-        const response = await axios.get(
+        const response = await axios.post(
           `${apiUrl}createdeck&userid=${userId}&deckname=${deckName}&format=${format}`
         );
         if (response.data) {
           this.$state.connectSuccess = true;
           console.log(this.connectSuccess);
-          this.$state.deckId = response.data.deckId;
+          this.$state.deckId = response.data.deck_id;
           console.log(this.deckId);
-          this.$state.deckName = deckName;
+          this.$state.deckName = response.data.deck_name;
           console.log(this.deckName);
-          this.$state.deckFormat = format;
+          this.$state.deckFormat = response.data.format;
           console.log(this.deckFormat);
         } else {
           this.$state.deckName = deckName;
