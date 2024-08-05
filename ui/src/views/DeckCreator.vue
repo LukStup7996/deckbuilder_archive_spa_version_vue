@@ -6,9 +6,12 @@ export default {
   name: "deck-creator",
   data() {
     return {
-      deckName: null,
+      sandboxApi: useSandboxApiStore(),
+      userApi: useArchiveuserApiStore(),
+      deckName: "",
+      userID: "",
       format: "Standard",
-      formats: [
+      options: [
         "Standard",
         "Modern",
         "Pauper",
@@ -20,18 +23,17 @@ export default {
       ],
     };
   },
-  methods: {
-    async createNewDeck() {
-      await this.sandboxApi.createDeck(this.deckName, this.format);
-      this.$router.push("/sand-box");
+  computed: {
+    setUserID() {
+      this.userID == this.userApi.userId;
+      console.log(this.userID);
+      return this.userID;
     },
   },
-  computed: {
-    sandboxApi() {
-      return useSandboxApiStore();
-    },
-    userApi() {
-      return useArchiveuserApiStore();
+  methods: {
+    async createNewDeck() {
+      await this.sandboxApi.createDeck(this.userID, this.deckName, this.format);
+      this.$router.push("/sand-box");
     },
   },
 };
@@ -48,7 +50,7 @@ export default {
       <div class="form-group mb-3">
         <label for="format" class="form-label">Format:</label>
         <select v-model="format" class="form-select">
-          <option v-for="fmt in formats" :key="fmt">{{ fmt }}</option>
+          <option v-for="fmt in options" :key="fmt">{{ fmt }}</option>
         </select>
       </div>
       <div class="form-group mt-3 d-flex justify-content-end">
