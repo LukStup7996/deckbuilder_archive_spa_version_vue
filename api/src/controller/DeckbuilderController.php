@@ -251,4 +251,4 @@ class DeckbuilderController
     private function removeCardFromMaybeboard($cardId, $deckId) {
         $this->deckBuilderService->removeMaybeDeckContents($cardId, $deckId);
     } 
-}
+U10
