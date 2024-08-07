@@ -81,9 +81,9 @@ class UserAccountController
             return false;
         }
     }
-    private function validateUserLogin($mailAdres, $password){
-        if(!isset($_SESSION['user'])){
-            $userlogin = $this->accountGateway->getUserByMailAdress($mailAdres);
+    private function validateUserLogin($mailAdress, $password){
+        if($mailAdress){
+            $userlogin = $this->accountGateway->getUserByMailAdress($mailAdress);
             if(password_verify($password, $userlogin->user_password)){
                 $userToken = array(
                     'user_id' => $userlogin->user_id,

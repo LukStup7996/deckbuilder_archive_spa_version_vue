@@ -1,6 +1,7 @@
 <script>
 import { useSandboxApiStore } from "@/stores/sandboxApiStore";
 import { useCardApiStore } from "@/stores/cardApiStore";
+import { useArchiveuserApiStore } from "@/stores/archiveuserApiStore";
 
 export default {
   name: "sand-box",
@@ -9,6 +10,14 @@ export default {
       searchQuery: "",
       searchResults: [],
       quantity: {},
+      mainDeck: [],
+      sideDeck: [],
+      maybeDeck: [],
+      deckId: "",
+      userId: "",
+      sandboxApi: useSandboxApiStore(),
+      userApi: useArchiveuserApiStore(),
+      cardApi: useCardApiStore(),
     };
   },
   computed: {
@@ -18,26 +27,20 @@ export default {
     deckFormat() {
       return this.sandboxApi.deckFormat;
     },
-    sandboxApi() {
-      return useSandboxApiStore();
-    },
-    cardApi() {
-      return useCardApiStore();
-    },
     mainTotal() {
-      return this.sandboxApi.mainboard.reduce(
+      return this.mainDeck.reduce(
         (total, card) => total + (card.quantity || 1),
         0
       );
     },
     sideTotal() {
-      return this.sandboxApi.sideboard.reduce(
+      return this.sideDeck.reduce(
         (total, card) => total + (card.quantity || 1),
         0
       );
     },
     maybeTotal() {
-      return this.sandboxApi.maybeboard.reduce(
+      return this.maybeDeck.reduce(
         (total, card) => total + (card.quantity || 1),
         0
       );
@@ -53,13 +56,22 @@ export default {
             }
           });
         } else {
-          console.error("searchResults ist kein Array:", newResults);
+          console.error("searchResults is not an array:", newResults);
         }
       },
       immediate: true,
     },
   },
   methods: {
+    async loadDeckData() {
+      this.userId = this.userApi.userId;
+      this.deckId = this.sandboxApi.deckId;
+      this.sandboxApi.loadSessionData(this.userId, this.deckId).then(() => {
+        this.mainDeck = this.sandboxApi.mainboard;
+        this.sideDeck = this.sandboxApi.sideboard;
+        this.maybeDeck = this.sandboxApi.maybeboard;
+      });
+    },
     searchCards() {
       this.cardApi.getCardsByName(this.searchQuery).then(() => {
         this.searchResults = this.cardApi.cards;
@@ -90,7 +102,7 @@ export default {
     },
   },
   mounted() {
-    this.sandboxApi.loadSessionData();
+    this.loadDeckData();
   },
 };
 </script>

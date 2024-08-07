@@ -104,7 +104,12 @@ class DeckbuilderController
     private function createNewDecklist($userId, $deckName, $format){
         if ($userId) {
             $newDeckList = $this->deckBuilderService->createDecklist($userId, $deckName, $format);
-            $this->jsonView->display($newDeckList);
+            $deckToken = array(
+                "deck_id" => $newDeckList,
+                "deck_name" => $deckName,
+                "format" => $format,
+            );
+            $this->jsonView->display($deckToken);
         } else {
             $errorM = "You need to be logged in in order to use our services.";
             $this->jsonView->display($errorM);
@@ -203,7 +208,13 @@ class DeckbuilderController
         $deckData['mainDeck'] = $mainDeckContents;
         $deckData['sideDeck'] = $sideDeckContents;
         $deckData['maybeDeck'] = $maybeBoardContents;
-        $this->jsonView->display($deckData);
+        $dataToken = array(
+            'deck_id' => $deckData['deckId'],
+            'main_deck' => $deckData['mainDeck'],
+            'side_deck' => $deckData['sideDeck'],
+            'maybe_deck' => $deckData['maybeDeck'],
+        );
+        $this->jsonView->display($dataToken);
     }    
     private function getCardData($cardId){
         $cardInfo = $this->cardArchiveService->getCardsById($cardId);
@@ -219,7 +230,7 @@ class DeckbuilderController
         $errorM = "Could not add card";
         $this->jsonView->display($errorM);
        }
-    }
+    } 
     private function removeCardFromMainboard($cardId, $deckId) {
         $this->deckBuilderService->removeMainDeckContents($cardId, $deckId);
     }
