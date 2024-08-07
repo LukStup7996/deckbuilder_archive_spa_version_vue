@@ -23,18 +23,20 @@ export default {
       ],
     };
   },
-  computed: {
-    setUserID() {
-      this.userID == this.userApi.userId;
-      console.log(this.userID);
-      return this.userID;
-    },
-  },
+  computed: {},
   methods: {
     async createNewDeck() {
       await this.sandboxApi.createDeck(this.userID, this.deckName, this.format);
       this.$router.push("/sand-box");
     },
+    async setUserID() {
+      this.userID = this.userApi.userId;
+      console.log(this.userID);
+      return this.userID;
+    },
+  },
+  mounted() {
+    this.setUserID();
   },
 };
 </script>
