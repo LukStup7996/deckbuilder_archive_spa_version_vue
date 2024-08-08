@@ -55,6 +55,9 @@ class NavigationController
             case 'addcard':
             case 'removecard':
             case 'selectdeck':
+            case 'displaymain':
+            case 'displayside':
+            case 'displaymaybe':
             case 'deletedeck':
                 $this->buildDeck();
                 break;    
