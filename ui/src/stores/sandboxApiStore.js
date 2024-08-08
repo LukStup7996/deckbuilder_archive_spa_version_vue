@@ -75,6 +75,63 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
         );
       }
     },
+    async loadMainDeck(userId, deckId) {
+      this.$state.connectSuccess = false;
+      try {
+        const response = await axios.get(
+          `${apiUrl}displaymain&userid=${userId}&deckId=${deckId}`
+        );
+        this.$state.connectSuccess = true;
+        console.log(this.connectSuccess);
+        this.$state.deckId = response.data.id;
+        console.log(this.deckId);
+        this.$state.mainboard = response.data.main;
+        console.log(this.mainboard);
+      } catch (error) {
+        console.error(
+          "An error has occurred trying to load your deck data:",
+          error
+        );
+      }
+    },
+    async loadSideDeck(userId, deckId) {
+      this.$state.connectSuccess = false;
+      try {
+        const response = await axios.get(
+          `${apiUrl}displayside&userid=${userId}&deckId=${deckId}`
+        );
+        this.$state.connectSuccess = true;
+        console.log(this.connectSuccess);
+        this.$state.deckId = response.data.id;
+        console.log(this.deckId);
+        this.$state.mainboard = response.data.main;
+        console.log(this.mainboard);
+      } catch (error) {
+        console.error(
+          "An error has occurred trying to load your deck data:",
+          error
+        );
+      }
+    },
+    async loadMaybeDeck(userId, deckId) {
+      this.$state.connectSuccess = false;
+      try {
+        const response = await axios.get(
+          `${apiUrl}displaymaybe&userid=${userId}&deckId=${deckId}`
+        );
+        this.$state.connectSuccess = true;
+        console.log(this.connectSuccess);
+        this.$state.deckId = response.data.id;
+        console.log(this.deckId);
+        this.$state.mainboard = response.data.main;
+        console.log(this.mainboard);
+      } catch (error) {
+        console.error(
+          "An error has occurred trying to load your deck data:",
+          error
+        );
+      }
+    },
     async addCardToDBCardsDecklists(
       userId,
       cardId,

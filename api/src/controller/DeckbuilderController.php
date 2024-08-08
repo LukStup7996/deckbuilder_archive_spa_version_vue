@@ -84,6 +84,30 @@ class DeckbuilderController
                     $this->displayDeckContents($deckIdInput);
                 }
                 break;
+            case 'displaymain':
+                $userIdInput = filter_input(INPUT_GET, "userid", FILTER_SANITIZE_NUMBER_INT);
+                $deckIdInput = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_NUMBER_INT);
+                $confirmLegality = $this->verifyDeckLegalityForArchiver($userIdInput, $deckIdInput);
+                if($confirmLegality){
+                    $this->displayMainDeckContents($deckIdInput);
+                }
+                break;
+            case 'displayside':
+                $userIdInput = filter_input(INPUT_GET, "userid", FILTER_SANITIZE_NUMBER_INT);
+                $deckIdInput = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_NUMBER_INT);
+                $confirmLegality = $this->verifyDeckLegalityForArchiver($userIdInput, $deckIdInput);
+                if($confirmLegality){
+                    $this->displaySideDeckContents($deckIdInput);
+                }
+                break;
+            case 'displaymaybe':
+                $userIdInput = filter_input(INPUT_GET, "userid", FILTER_SANITIZE_NUMBER_INT);
+                $deckIdInput = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_NUMBER_INT);
+                $confirmLegality = $this->verifyDeckLegalityForArchiver($userIdInput, $deckIdInput);
+                if($confirmLegality){
+                    $this->displayMaybeDeckContents($deckIdInput);
+                }
+                break;    
             case 'deletedeck':
                 $userIdInput = filter_input(INPUT_GET, "userid", FILTER_SANITIZE_NUMBER_INT);
                 $deckIdInput = filter_input(INPUT_GET, "deckid", FILTER_SANITIZE_NUMBER_INT);
@@ -182,11 +206,63 @@ class DeckbuilderController
             $this->maybedeck[$cardId] = $quantity;
         }
     }
+    private function displayMainDeckContents($deckId){
+        $this->setMainBoardContent($deckId);
+        $mainDeckContents = [];
+        foreach($this->maindeck as $mainInfo => $quantity){
+            $mainInfo= $this->getCardData($mainInfo);
+            array_push($mainDeckContents, $mainInfo);
+            array_push($mainDeckContents, $quantity);
+        };
+        $deckData = [];
+        $deckData['id'] = $deckId;
+        $deckData['main'] = $mainDeckContents;
+        $mainData = array(
+            "id" => $deckData->id,
+            "main" => $deckData->main,
+        );
+        $this->jsonView->display($mainData);
+    }
+    
+    private function displaySideDeckContents($deckId){
+        $this->setSideBoardContent($deckId);
+        $sideDeckContents = [];
+        foreach($this->sidedeck as $sideInfo => $quantity){
+            $sideInfo= $this->getCardData($sideInfo);
+            array_push($sideDeckContents, $sideInfo);
+            array_push($sideDeckContents, $quantity);
+        };
+        $deckData = [];
+        $deckData['id'] = $deckId;
+        $deckData['side'] = $sideDeckContents;
+        $sideData = array(
+            "id" => $deckData->id,
+            "side" => $deckData->side,
+        );
+        $this->jsonView->display($sideData);
+    }
+    private function displayMaybeDeckContents($deckId){
+        $this->setMaybeBoardContent($deckId);
+        $mainDeckContents = [];
+        foreach($this->maybedeck as $maybeInfo => $quantity){
+            $maybeInfo= $this->getCardData($maybeInfo);
+            array_push($mainDeckContents, $maybeInfo);
+            array_push($mainDeckContents, $quantity);
+        };
+        $deckData = [];
+        $deckData['id'] = $deckId;
+        $deckData['maybe'] = $mainDeckContents;
+        $maybeData = array(
+            "id" => $deckData->id,
+            "maybe" => $deckData->maybe,
+        );
+        $this->jsonView->display($maybeData);
+    }
     private function displayDeckContents($deckId){
-        $this->getDeckContents($deckId);
         $mainDeckContents = [];
         $sideDeckContents = [];
         $maybeBoardContents = [];
+        $this->getDeckContents($deckId);
         foreach($this->maindeck as $mainInfo => $quantity){       
             $mainInfo= $this->getCardData($mainInfo);
             array_push($mainDeckContents, $mainInfo);
@@ -209,10 +285,10 @@ class DeckbuilderController
         $deckData['sideDeck'] = $sideDeckContents;
         $deckData['maybeDeck'] = $maybeBoardContents;
         $dataToken = array(
-            'deck_id' => $deckData['deckId'],
-            'main_deck' => $deckData['mainDeck'],
-            'side_deck' => $deckData['sideDeck'],
-            'maybe_deck' => $deckData['maybeDeck'],
+            'deck_id' => $deckData->deckId,
+            'main_deck' => $deckData->mainDeck,
+            'side_deck' => $deckData->sideDeck,
+            'maybe_deck' => $deckData->maybeDeck,
         );
         $this->jsonView->display($dataToken);
     }    

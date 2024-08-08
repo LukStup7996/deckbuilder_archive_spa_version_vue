@@ -27,6 +27,15 @@ export default {
     deckFormat() {
       return this.sandboxApi.deckFormat;
     },
+    mainContents() {
+      return this.loadMainContents();
+    },
+    sideContents() {
+      return this.loadSideContents();
+    },
+    maybeContents() {
+      return this.loadMaybeContents();
+    },
     mainTotal() {
       return this.mainDeck.reduce(
         (total, card) => total + (card.quantity || 1),
@@ -70,6 +79,27 @@ export default {
         this.mainDeck = this.sandboxApi.mainboard;
         this.sideDeck = this.sandboxApi.sideboard;
         this.maybeDeck = this.sandboxApi.maybeboard;
+      });
+    },
+    async loadMainContents() {
+      this.userId = this.userApi.userId;
+      this.deckId = this.sandboxApi.deckId;
+      this.sandboxApi.loadMainDeck(this.userId, this.deckId).then(() => {
+        this.mainDeck = this.sandboxApi.mainboard;
+      });
+    },
+    async loadSideContents() {
+      this.userId = this.userApi.userId;
+      this.deckId = this.sandboxApi.deckId;
+      this.sandboxApi.loadMainDeck(this.userId, this.deckId).then(() => {
+        this.mainDeck = this.sandboxApi.mainboard;
+      });
+    },
+    async loadMaybeContents() {
+      this.userId = this.userApi.userId;
+      this.deckId = this.sandboxApi.deckId;
+      this.sandboxApi.loadMainDeck(this.userId, this.deckId).then(() => {
+        this.mainDeck = this.sandboxApi.mainboard;
       });
     },
     searchCards() {
