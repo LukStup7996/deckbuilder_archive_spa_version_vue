@@ -23,9 +23,9 @@ export default {
       ],
     };
   },
-  computed: {},
   methods: {
     async createNewDeck() {
+      console.log(this.userID);
       await this.sandboxApi.createDeck(this.userID, this.deckName, this.format);
       this.$router.push("/sand-box");
     },
