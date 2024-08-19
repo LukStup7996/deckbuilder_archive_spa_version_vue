@@ -36,7 +36,6 @@ class NavigationController
             case 'filterbycost':
                 $this->searchForCard();
                 break;
-            case 'searchbyuser':
             case 'searchbyname':
             case 'searchbyformat':
             case 'searchalldecks':

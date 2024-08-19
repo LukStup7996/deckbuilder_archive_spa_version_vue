@@ -18,10 +18,6 @@ class DeckArchiveController
     public function route(){
         $action = filter_input(INPUT_GET, "action", FILTER_SANITIZE_STRING);
         switch(strtolower($action)){
-            case 'searchbyuser':
-                $getUserId = filter_input(INPUT_GET,"userid",FILTER_SANITIZE_NUMBER_INT);
-                $this->getDecksByUserId($getUserId);
-                break;
             case 'searchbyname':
                 $getDeckName = filter_input(INPUT_GET,"deckname",FILTER_SANITIZE_STRING);
                 $this->getDecksByName($getDeckName);
@@ -61,16 +57,16 @@ class DeckArchiveController
         }
         $this->jsonView->display($dtoList);
     }
-    public function getDecksByUserId($userId){
-        $listofDecksByUser = $this->deckArchiveService->getDecksByUserId($userId);
-        foreach ($listofDecksByUser as $deck) {
+    public function getDecksByFormat($format){
+        $listofDecksByFormat = $this->deckArchiveService->getDecksByFormat($format);
+        foreach ($listofDecksByFormat as $deck) {
             $dtoList[] = DeckModelDTO::map($deck, $this->url);
         }
         $this->jsonView->display($dtoList);
     }
-    public function getDecksByFormat($format){
-        $listofDecksByFormat = $this->deckArchiveService->getDecksByFormat($format);
-        foreach ($listofDecksByFormat as $deck) {
+    public function getDecksByUserId($userId){
+        $listofDecksByUser = $this->deckArchiveService->getDecksByUserId($userId);
+        foreach ($listofDecksByUser as $deck) {
             $dtoList[] = DeckModelDTO::map($deck, $this->url);
         }
         $this->jsonView->display($dtoList);
