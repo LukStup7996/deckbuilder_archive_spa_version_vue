@@ -7,8 +7,8 @@ export default {
   name: "sand-box",
   data() {
     return {
-      searchQuery: "",
-      searchResults: [],
+      cardName: "",
+      cards: [],
       quantity: {},
       mainDeck: [],
       sideDeck: [],
@@ -102,18 +102,18 @@ export default {
         this.mainDeck = this.sandboxApi.mainboard;
       });
     },
-    searchCards() {
-      this.cardApi.getCardsByName(this.searchQuery).then(() => {
-        this.searchResults = this.cardApi.cards;
+    filterCardNames(cardName) {
+      this.cardApi.getCardsByName(cardName).then(() => {
+        this.cards = this.cardApi.cards;
       });
     },
     addCardToDeck(cardId, destination) {
-      const card = this.searchResults.find((card) => card.cardId === cardId);
+      const card = this.cards.find((card) => card.cardId === cardId);
       if (card) {
         const quantity = (this.quantity[cardId] || 0) + 1;
         this.quantity[cardId] = quantity;
         this.cardApi.fetchCardDetails(cardId).then(() => {
-          const cardDetails = this.cardApi.card[0];
+          const cardDetails = this.cardApi.cards;
           if (!cardDetails) return;
           const cardInfo = {
             card_name: cardDetails.cardName,
@@ -132,7 +132,9 @@ export default {
     },
   },
   mounted() {
-    this.loadDeckData();
+    this.loadMainContents();
+    this.loadSideContents();
+    this.loadMaybeContents();
   },
 };
 </script>
@@ -148,16 +150,16 @@ export default {
     <div class="content d-flex">
       <div class="sidebar bg-secondary text-white p-3">
         <div>
-          <input v-model="searchQuery" placeholder="Search cards" />
-          <button @click="searchCards">Search</button>
+          <input v-model="cardName" placeholder="Search cards" />
+          <button @click="filterCardNames">Search</button>
         </div>
         <div v-if="searchResults.length">
-          <div
-            v-for="card in searchResults"
-            :key="card.cardId"
-            class="card-item"
-          >
-            <img :src="`../assets/img/${card.cardId}.jpg`" class="card-img" />
+          <div v-for="card in cards" :key="card.cardId" class="card-item">
+            <img
+              :src="require(`../assets/img/${card.cardId}.jpg`)"
+              class="card-img"
+              style="font-size: 8px"
+            />
             <p>{{ card.cardName }}</p>
             <button @click="addCardToDeck(card.cardId, 'main')">Main</button>
             <button @click="addCardToDeck(card.cardId, 'side')">Side</button>
@@ -168,13 +170,34 @@ export default {
       <div class="main-container d-flex flex-column flex-grow-1">
         <div id="main" class="bg-danger p-3 mb-2 flex-grow-1">
           Mainboard: ({{ mainTotal }})
+          <div v-for="card in mainDeck" :key="card.cardId">
+            <div class="row">
+              <div class="col-sm">{{ card.cardName }}</div>
+              <div class="col-sm">{{ card.manaValue }}</div>
+              <div class="col-sm">{{ card.quantity }}</div>
+            </div>
+          </div>
         </div>
         <div class="d-flex flex-column">
           <div id="side" class="bg-primary p-3 mb-2">
             Side Container: ({{ sideTotal }})
+            <div v-for="card in sideDeck" :key="card.cardId">
+              <div class="row">
+                <div class="col-sm">{{ card.cardName }}</div>
+                <div class="col-sm">{{ card.manaValue }}</div>
+                <div class="col-sm">{{ card.quantity }}</div>
+              </div>
+            </div>
           </div>
           <div id="maybe" class="bg-success p-3">
             Maybe Container: ({{ maybeTotal }})
+            <div v-for="card in maybeDeck" :key="card.cardId">
+              <div class="row">
+                <div class="col-sm">{{ card.cardName }}</div>
+                <div class="col-sm">{{ card.manaValue }}</div>
+                <div class="col-sm">{{ card.quantity }}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

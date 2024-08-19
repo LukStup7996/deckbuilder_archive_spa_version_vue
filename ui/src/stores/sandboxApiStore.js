@@ -17,7 +17,7 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
   }),
   actions: {
     async createDeck(userId, deckName, format) {
-      console.log(this.userId);
+      console.log(userId);
       try {
         const response = await axios.get(
           `${apiUrl}createdeck&userid=${userId}&deckname=${deckName}&format=${format}`
@@ -60,13 +60,13 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
         );
         this.$state.connectSuccess = true;
         console.log(this.connectSuccess);
-        this.$state.deckId = response.data.deck_id;
+        this.$state.deckId = response.data.deckId;
         console.log(this.deckId);
-        this.$state.mainboard = response.data.main_deck;
+        this.$state.mainboard = response.data.mainDeck;
         console.log(this.mainboard);
-        this.$state.sideboard = response.data.side_deck;
+        this.$state.sideboard = response.data.sideDeck;
         console.log(this.sideboard);
-        this.$state.maybeboard = response.data.maybe_deck;
+        this.$state.maybeboard = response.data.maybeDeck;
         console.log(this.maybeboard);
       } catch (error) {
         console.error(
@@ -104,7 +104,7 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
         console.log(this.connectSuccess);
         this.$state.deckId = response.data.id;
         console.log(this.deckId);
-        this.$state.mainboard = response.data.main;
+        this.$state.mainboard = response.data.side;
         console.log(this.mainboard);
       } catch (error) {
         console.error(
@@ -123,7 +123,7 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
         console.log(this.connectSuccess);
         this.$state.deckId = response.data.id;
         console.log(this.deckId);
-        this.$state.mainboard = response.data.main;
+        this.$state.mainboard = response.data.maybe;
         console.log(this.mainboard);
       } catch (error) {
         console.error(

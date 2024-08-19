@@ -15,7 +15,6 @@ export default {
   },
   computed: {
     card() {
-      // Da displayedCard null sein kann, stellen wir sicher, dass wir mit einem leeren Objekt arbeiten, um Fehler zu vermeiden.
       return this.displayedCard || {};
     },
   },
@@ -38,7 +37,7 @@ export default {
     },
   },
   mounted() {
-    this.route = useRoute(); // Zugriff auf route sicherstellen
+    this.route = useRoute();
     this.fetchCardData();
   },
 };
