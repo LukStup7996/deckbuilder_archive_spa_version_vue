@@ -23,15 +23,15 @@ class DeckArchiveController
                 $this->getDecksByName($getDeckName);
                 break;
             case 'searchbyformat':
-                $getFormat = filter_input(INPUT_GET,"format",FILTER_SANITIZE_NUMBER_INT);
+                $getFormat = filter_input(INPUT_GET,"format",FILTER_SANITIZE_STRING);
                 $this->getDecksByFormat($getFormat);
                 break;
             case 'searchalldecks':
                 $this->displayAllDecklists();
                 break;
             case 'displayowned':
-                $ownUserId = unserialize($_SESSION['user']);
-                $this->getDecksByUserId($ownUserId->user_id);
+                $getUserIdInput = filter_input(INPUT_GET,"userid",FILTER_SANITIZE_NUMBER_INT);
+                $this->getDecksByUserId($getUserIdInput);
                 break;
             case 'displaydeckcontents':
                 $getDeckId = filter_input(INPUT_GET,"deckid",FILTER_SANITIZE_NUMBER_INT);
