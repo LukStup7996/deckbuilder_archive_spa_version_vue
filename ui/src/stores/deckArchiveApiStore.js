@@ -7,6 +7,7 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
   state: () => ({
     decks: [],
     ownedDecks: [],
+    deckContents: [],
     connectSuccess: false,
   }),
   actions: {
@@ -25,7 +26,9 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
     },
     async filterByDeckName(deckName) {
       try {
-        const response = await axios.get(apiUrl + "searchbyname=" + deckName);
+        const response = await axios.get(
+          apiUrl + "searchbyname&deckname=" + deckName
+        );
         this.$state.decks = response.data;
         this.$state.connectSuccess = true;
       } catch (error) {
@@ -38,7 +41,9 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
     },
     async searchByFormat(format) {
       try {
-        const response = await axios.get(apiUrl + "searchbyformat=" + format);
+        const response = await axios.get(
+          apiUrl + "searchbyformat&format=" + format
+        );
         this.$state.decks = response.data;
         this.$state.connectSuccess = true;
       } catch (error) {
@@ -51,7 +56,9 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
     },
     async getOwnedDecklists(userId) {
       try {
-        const response = await axios.get(apiUrl + "displayowned" + userId);
+        const response = await axios.get(
+          apiUrl + "displayowned&userid=" + userId
+        );
         this.$state.ownedDecks = response.data;
         this.$state.connectSuccess = true;
       } catch (error) {
@@ -59,6 +66,22 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
         this.$state.ownedDecks = [];
         this.error =
           "There has been an issue with connecting to the deck archives.";
+        console.log(error);
+      }
+    },
+    async fetchDeckDetails(deckId) {
+      try {
+        this.$state.deckContents = [];
+        const response = await axios.get(
+          apiUrl + "displaydeckcontents&deckid=" + deckId
+        );
+        this.$state.deckContents = response.data;
+        this.$state.connectSuccess = true;
+      } catch (error) {
+        this.$state.connectSuccess = false;
+        this.$state.deckContents = [];
+        this.error =
+          "We apologize we couldn't find the contents of this decklist.";
         console.log(error);
       }
     },

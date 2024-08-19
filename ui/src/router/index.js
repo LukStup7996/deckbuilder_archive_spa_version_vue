@@ -29,6 +29,12 @@ const routes = [
     props: true,
   },
   {
+    path: "/deck-content-display/:deckId",
+    name: "deck-content-display",
+    component: () => import("../views/DeckContentDisplay.vue"),
+    props: true,
+  },
+  {
     path: "/account-creation",
     name: "account-creation",
     component: () => import("../views/AccountCreation.vue"),

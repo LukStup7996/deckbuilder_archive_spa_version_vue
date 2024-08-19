@@ -3,7 +3,7 @@ import { useCardApiStore } from "../stores/cardApiStore";
 import { useRoute } from "vue-router";
 
 export default {
-  name: "DisplaySingleCard",
+  name: "display-single-card",
   props: {
     cardId: { type: String, required: true },
   },

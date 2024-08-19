@@ -16,6 +16,8 @@ export default {
       confirmPassword: "",
       userId: "",
       userApi: useArchiveuserApiStore(),
+      ownedDecks: [],
+      deckArchiveApi: useDeckArchiveApiStore(),
     };
   },
   computed: {
@@ -51,7 +53,10 @@ export default {
       }
     },
     async getDecklists() {
-      await this.getOwnedDecklists(this.userId);
+      this.deckArchiveApi.getOwnedDecklists(this.userId).then(() => {
+        this.ownedDecks = this.deckArchiveApi.ownedDecks;
+        console.log(this.ownedDecks);
+      });
     },
     async setUserID() {
       this.userId = this.userApi.userId;
@@ -61,6 +66,7 @@ export default {
   },
   mounted() {
     this.setUserID();
+    this.getDecklists();
   },
 };
 </script>
@@ -129,7 +135,26 @@ export default {
     </div>
     <div class="deck-contents">
       <div v-if="selectedOption === 'owned-deck-lists'">
-        <h3>placeholder</h3>
+        <h3>Your decklists:</h3>
+        <div
+          v-for="deck in ownedDecks"
+          :key="deck.deckId"
+          class="card"
+          style="width: 18rem"
+        >
+          <div class="card-body">
+            <h5 class="card-title">{{ deck.deckName }}</h5>
+            <p class="card-text">Deck-ID: {{ deck.deckId }}</p>
+            <router-link
+              :to="{
+                name: 'deck-content-display',
+                params: { deckId: deck.deckId },
+              }"
+            >
+              <button class="btn btn-primary">Additional Info</button>
+            </router-link>
+          </div>
+        </div>
       </div>
     </div>
   </div>
