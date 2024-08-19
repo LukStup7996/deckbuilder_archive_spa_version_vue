@@ -1,18 +1,26 @@
 <script>
 import { mapActions, mapState } from "pinia";
 import { useArchiveuserApiStore } from "@/stores/archiveuserApiStore";
+import { useDeckArchiveApiStore } from "@/stores/deckArchiveApiStore";
 
 export default {
   data() {
     return {
       selectedOption: "account-settings",
+      options: [
+        { text: "Account Settings", value: "account-settings" },
+        { text: "Your decklists", value: "owned-deck-lists" },
+      ],
       newUserName: "",
       newPassword: "",
       confirmPassword: "",
+      userId: "",
+      userApi: useArchiveuserApiStore(),
     };
   },
   computed: {
     ...mapState(useArchiveuserApiStore, ["userData", "error"]),
+    ...mapState(useDeckArchiveApiStore, ["ownedDecks", "error"]),
   },
   methods: {
     ...mapActions(useArchiveuserApiStore, [
@@ -20,6 +28,7 @@ export default {
       "updateUserPassword",
       "deleteArchiver",
     ]),
+    ...mapActions(useDeckArchiveApiStore, ["getOwnedDecklists"]),
     async updateName() {
       if (this.newUserName) {
         await this.updateUserName(this.confirmPassword, this.newUserName);
@@ -41,6 +50,17 @@ export default {
         this.$router.push("/");
       }
     },
+    async getDecklists() {
+      await this.getOwnedDecklists(this.userId);
+    },
+    async setUserID() {
+      this.userId = this.userApi.userId;
+      console.log(this.userId);
+      return this.userId;
+    },
+  },
+  mounted() {
+    this.setUserID();
   },
 };
 </script>
@@ -49,16 +69,19 @@ export default {
   <div class="account-settings">
     <div class="sidebar">
       <ul>
-        <li :class="{ active: selectedOption === 'settings' }">
-          <a @click.prevent="selectedOption = 'settings'">Settings</a>
+        <li :class="{ active: selectedOption === 'account-settings' }">
+          <a @click.prevent="selectedOption = 'account-settings'">Settings</a>
+        </li>
+        <li :class="{ active: selectedOption === 'owned-deck-lists' }">
+          <a @click.prevent="selectedOption = 'owned-deck-lists'">Your Decks</a>
         </li>
       </ul>
     </div>
     <div class="settings-content">
-      <div v-if="selectedOption === 'settings'">
+      <div v-if="selectedOption === 'account-settings'">
         <h2>Account Settings</h2>
         <div class="form-group">
-          <p>Username ändern?</p>
+          <p>Change Username</p>
           <label>{{ userData.user_name }}</label>
           <input v-model="newUserName" type="text" class="form-control" />
           <input
@@ -72,7 +95,7 @@ export default {
           </button>
         </div>
         <div class="form-group">
-          <p>Change Password Placeholder</p>
+          <p>Change Password</p>
           <input
             v-model="newPassword"
             type="password"
@@ -90,7 +113,7 @@ export default {
           </button>
         </div>
         <div class="form-group">
-          <p>Delete Account Placeholder</p>
+          <p>Delete Account</p>
           <input
             v-model="confirmPassword"
             type="password"
@@ -102,6 +125,11 @@ export default {
           </button>
         </div>
         <div v-if="error" class="alert alert-danger">{{ error }}</div>
+      </div>
+    </div>
+    <div class="deck-contents">
+      <div v-if="selectedOption === 'owned-deck-lists'">
+        <h3>placeholder</h3>
       </div>
     </div>
   </div>

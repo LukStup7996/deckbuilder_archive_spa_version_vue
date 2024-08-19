@@ -23,9 +23,9 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
         console.log(error);
       }
     },
-    async filterByDeckName() {
+    async filterByDeckName(deckName) {
       try {
-        const response = await axios.get(apiUrl + "searchbyname");
+        const response = await axios.get(apiUrl + "searchbyname=" + deckName);
         this.$state.decks = response.data;
         this.$state.connectSuccess = true;
       } catch (error) {
@@ -36,9 +36,9 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
         console.log(error);
       }
     },
-    async searchByFormat() {
+    async searchByFormat(format) {
       try {
-        const response = await axios.get(apiUrl + "searchbyformat");
+        const response = await axios.get(apiUrl + "searchbyformat=" + format);
         this.$state.decks = response.data;
         this.$state.connectSuccess = true;
       } catch (error) {
@@ -49,9 +49,9 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
         console.log(error);
       }
     },
-    async getOwnedDecklists() {
+    async getOwnedDecklists(userId) {
       try {
-        const response = await axios.get(apiUrl + "displayowned");
+        const response = await axios.get(apiUrl + "displayowned" + userId);
         this.$state.ownedDecks = response.data;
         this.$state.connectSuccess = true;
       } catch (error) {
