@@ -1,6 +1,6 @@
 <?php
 namespace deckbuilder_archive_spa_version_vue\api\models;
-//Model to store deck content objects based on database properties
+
 class DeckContentModel
 {
     public $cardName;

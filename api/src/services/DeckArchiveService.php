@@ -26,10 +26,6 @@ class DeckArchiveService
         $listofDecksByFormat = $this->deckArchiveGateway->getDecksByFormat($format);
         return $listofDecksByFormat;
     }
-    public function displayDecklistContent($deckId){
-        $deckContents = $this->deckArchiveGateway->displayDecklistContent($deckId);
-        return $deckContents; 
-    }
      public function checkForUserCreatedDBContent($userId){
         $listOfAvailableDecks = $this->deckArchiveGateway->checkForUserCreatedDBContent($userId);
         return $listOfAvailableDecks;

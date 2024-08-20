@@ -73,9 +73,16 @@ class DeckArchiveController
     }
     public function displayDecklistContent($deckId){
         $deckData = [];
-        $deckContents = $this->deckArchiveService->displayDecklistContent($deckId);
+        $mainDeckContents = $this->deckArchiveService->displayMainDeckContent($deckId);
+        
+        $sideDeckContents = $this->deckArchiveService->displaySideBoardContent($deckId);
+        
+        $maybeDeckContents = $this->deckArchiveService->displayMaybeBoardContent($deckId);
+
         $deckData['deckId'] = $deckId;
-        $deckData['deckContents'] = $deckContents;
+        $deckData['mainDeckContents'] = $mainDeckContents;
+        $deckData['sideDeckContents'] = $sideDeckContents;
+        $deckData['maybeDeckContents'] = $maybeDeckContents;
         $this->jsonView->display($deckData);
     }
 }
