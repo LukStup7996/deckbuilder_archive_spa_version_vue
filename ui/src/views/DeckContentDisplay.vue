@@ -9,30 +9,32 @@ export default {
   },
   data() {
     return {
-      displayedDeck: [],
+      displayedDeck: null,
       deckArchiveApi: useDeckArchiveApiStore(),
     };
   },
   computed: {
-    deck() {
-      return this.displayedDeck || {};
+    deckContents() {
+      return this.displayedDeck ? this.displayedDeck.deckContents : [];
     },
   },
   methods: {
     async fetchDeckData() {
-      const deckId = this.route.params.deckId;
-      console.log(deckId);
-      await this.deckArchiveApi.fetchDeckDetails(deckId);
-      const deckDetails = this.deckArchiveApi.deckContents.length
-        ? this.deckArchiveApi.deckContents[0]
-        : null;
-      console.log(deckDetails);
+      const deckId = this.route.params.deckId || this.deckId;
+      console.log("Fetching data for deck ID:", deckId);
 
-      if (deckDetails) {
+      // Deckdetails über den API-Store abrufen
+      await this.deckArchiveApi.fetchDeckDetails(deckId);
+
+      // Angenommen deckArchiveApi speichert die Daten als Schlüssel-Wert-Paare
+      const deckDetails = this.deckArchiveApi.deckContents;
+
+      // Direkter Zugriff auf die benötigten Deckdaten basierend auf deckId
+      if (deckDetails && deckDetails.deckId === deckId) {
         this.displayedDeck = deckDetails;
-        console.log(this.displayedDeck);
+        console.log("Displayed deck set:", this.displayedDeck);
       } else {
-        console.error(`Card with ID ${deckId} not found.`);
+        console.error(`Deck with ID ${deckId} not found.`);
       }
     },
   },
@@ -42,27 +44,25 @@ export default {
   },
 };
 </script>
-
 <template>
-  <div>
-    <h5>{{ deck.deckName }}</h5>
-    <p>Deck-ID: {{ deck.deckId }}</p>
-    <div v-for="card in deck" :key="card.cardId">
-      <div class="row">
-        <div class="col-sm">
-          <p>{{ card.cardName }}</p>
-        </div>
-        <div class="col-sm">
-          <p>{{ card.manaValue }}</p>
-        </div>
-        <div class="col-sm">
-          <p>{{ card.quantity }}</p>
-        </div>
+  <div v-if="displayedDeck">
+    <h5>{{ displayedDeck.deckName }}</h5>
+    <p>Deck-ID: {{ displayedDeck.deckId }}</p>
+    <div v-for="card in deckContents" :key="card.cardId" class="row">
+      <div class="col-sm">
+        <p>{{ card.cardName }}</p>
+      </div>
+      <div class="col-sm">
+        <p>{{ card.manaValue }}</p>
+      </div>
+      <div class="col-sm">
+        <p>{{ card.quantity }}</p>
       </div>
     </div>
   </div>
+  <div v-else>
+    <p>Loading...</p>
+  </div>
 </template>
 
-<style scoped>
-/* Scoped styles here */
-</style>
+<style scoped></style>
