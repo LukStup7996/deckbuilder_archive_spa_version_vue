@@ -2,7 +2,6 @@
 namespace deckbuilder_archive_spa_version_vue\api\controller;
 use deckbuilder_archive_spa_version_vue\api\gateways\ReadUserFromDBGateway;
 use deckbuilder_archive_spa_version_vue\api\views\JsonView;
-use deckbuilder_archive_spa_version_vue\api\config\JwtHelper;
 
 class UserAccountController
 { 

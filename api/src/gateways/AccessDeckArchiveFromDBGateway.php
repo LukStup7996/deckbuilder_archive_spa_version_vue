@@ -50,14 +50,6 @@ class AccessDeckArchiveFromDBGateway
         $listOfDecksByFormat = $statement->fetchAll(PDO::FETCH_ASSOC);
         return $this->mapAllDecklists($listOfDecksByFormat);
     }
-    public function displayDecklistContent($deckId){
-        $sql = "SELECT card_id, deck_id, quantity, side_board, maybe_board FROM cards_decklists WHERE deck_id = :deckId ORDER BY card_id, side_board, maybe_board";
-        $statement = $this->pdo->prepare($sql);
-        $statement->bindParam(':deckId', $deckId);
-        $statement->execute();
-        $listOfDeckContents = $statement->fetchAll(PDO::FETCH_ASSOC);
-        return $this->mapAllDeckContents($listOfDeckContents);
-    }
     public function checkForUserCreatedDBContent($userId){
         $sql = "SELECT deck_id, user_id, deck_name, format FROM decklists WHERE user_id LIKE :userId ORDER BY deck_id";
         $statement = $this->pdo->prepare($sql);
@@ -115,13 +107,16 @@ class AccessDeckArchiveFromDBGateway
         }
         return $return;
     }
-    public function mapAllDeckContents(array $listOfContents){
+    public function mapAllDeckContents(array $listOfContents) {
         $return = [];
-        foreach($listOfContents as $card){
-            $sqlFetchCardInfo = "SELECT cards.card_name, cards.card_id, cards.card_type, cards.sub_type, cards.super_type, cards.mana_value, cards.cmc, cards_decklists.quantity FROM cards INNER JOIN cards_decklists ON cards.card_id = cards_decklists.card_id WHERE cards.card_id = :cardId";
+        foreach($listOfContents as $card) {
+            $sqlFetchCardInfo = "SELECT cards.card_name, cards.card_id, cards.card_type, cards.sub_type, cards.super_type, cards.mana_value, cards.cmc, cards_decklists.quantity FROM cards INNER JOIN cards_decklists ON cards.card_id = cards_decklists.card_id WHERE cards.card_id = :cardId AND cards_decklists.deck_id = :deckId";
+            
             $statement = $this->pdo->prepare($sqlFetchCardInfo);
-            $statement->bindParam(':cardId',$card['card_id']);
+            $statement->bindParam(':cardId', $card['card_id']);
+            $statement->bindParam(':deckId', $card['deck_id']);
             $statement->execute();
+    
             $cardInfo = $statement->fetchAll(PDO::FETCH_ASSOC);
             $mappedCards = $this->mapAllCards($cardInfo);
             $return = array_merge($return, $mappedCards);
