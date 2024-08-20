@@ -76,6 +76,7 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
           apiUrl + "displaydeckcontents&deckid=" + deckId
         );
         this.$state.deckContents = response.data;
+        console.log(this.$state.deckContents);
         this.$state.connectSuccess = true;
       } catch (error) {
         this.$state.connectSuccess = false;

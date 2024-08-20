@@ -72,7 +72,10 @@ class DeckArchiveController
         $this->jsonView->display($dtoList);
     }
     public function displayDecklistContent($deckId){
+        $deckData = [];
         $deckContents = $this->deckArchiveService->displayDecklistContent($deckId);
-        $this->jsonView->display($deckContents);
+        $deckData['deckId'] = $deckId;
+        $deckData['deckContents'] = $deckContents;
+        $this->jsonView->display($deckData);
     }
 }
