@@ -49,6 +49,11 @@ const handleLogout = () => {
                 >Card Archive</RouterLink
               >
             </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/deck-archive"
+                >Deck Archive</RouterLink
+              >
+            </li>
             <li class="nav-item dropdown" v-if="userStore.loginStatus == true">
               <a
                 class="nav-link dropdown-toggle"

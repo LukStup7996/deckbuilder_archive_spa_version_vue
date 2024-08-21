@@ -29,7 +29,12 @@ const routes = [
     props: true,
   },
   {
-    path: "/deck-content-display/:deckId",
+    path: "/deck-archive",
+    name: "deck-archive",
+    component: () => import("../views/DeckArchive.vue"),
+  },
+  {
+    path: "/deck-content-display/:deckId/:deckName/:deckFormat",
     name: "deck-content-display",
     component: () => import("../views/DeckContentDisplay.vue"),
     props: true,

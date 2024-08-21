@@ -148,7 +148,11 @@ export default {
             <router-link
               :to="{
                 name: 'deck-content-display',
-                params: { deckId: deck.deckId },
+                params: {
+                  deckId: deck.deckId,
+                  deckName: deck.deckName,
+                  deckFromat: deck.deckFromat,
+                },
               }"
             >
               <button class="btn btn-primary">Additional Info</button>

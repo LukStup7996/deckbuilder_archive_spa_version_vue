@@ -13,6 +13,7 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
   actions: {
     async getAllLists() {
       try {
+        this.$state.decks = [];
         const response = await axios.get(apiUrl + "searchalldecks");
         this.$state.decks = response.data;
         this.$state.connectSuccess = true;
@@ -26,6 +27,7 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
     },
     async filterByDeckName(deckName) {
       try {
+        this.$state.decks = [];
         const response = await axios.get(
           apiUrl + "searchbyname&deckname=" + deckName
         );
@@ -41,6 +43,7 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
     },
     async searchByFormat(format) {
       try {
+        this.$state.decks = [];
         const response = await axios.get(
           apiUrl + "searchbyformat&format=" + format
         );
@@ -56,6 +59,7 @@ export const useDeckArchiveApiStore = defineStore("deckArchiveApi", {
     },
     async getOwnedDecklists(userId) {
       try {
+        this.$state.ownedDecks = [];
         const response = await axios.get(
           apiUrl + "displayowned&userid=" + userId
         );
