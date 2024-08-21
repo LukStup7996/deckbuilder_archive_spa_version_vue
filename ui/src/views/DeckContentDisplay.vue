@@ -6,6 +6,8 @@ export default {
   name: "deck-content-display",
   props: {
     deckId: { type: String, required: true },
+    deckName: { type: String, required: true },
+    deckFormat: { type: String, required: true },
   },
   data() {
     return {
@@ -54,9 +56,12 @@ export default {
 
 <template>
   <div v-if="displayedDeck">
-    <div class="deck-info bg-light mb-2 p-2 text-center">
-      <h5>{{ displayedDeck.deckName }}</h5>
-      <p>Deck-ID: {{ displayedDeck.deckId }}</p>
+    <div class="row">
+      <div class="deck-info bg-light mb-2 p-2 text-center">
+        <div class="col col-sm">
+          <h5>{{ deckName }}</h5>
+        </div>
+      </div>
     </div>
     <div class="main-container">
       <div id="main" class="bg-danger p-3 mb-2 flex-grow-1">
@@ -113,6 +118,9 @@ export default {
         <p v-else>No cards in Maybe Deck</p>
       </div>
     </div>
+    <div class="col col-sm">
+      <h6>Format: {{ deckFormat }}</h6>
+    </div>
   </div>
   <div v-else>
     <p>Loading...</p>
@@ -123,13 +131,13 @@ export default {
 .deck-info {
   height: 40px;
   width: 100%;
+  align-items: flex-start;
 }
 
 .main-container {
   display: flex;
   flex-direction: row;
   gap: 10px;
-  align-items: flex-start;
 }
 
 #main {
