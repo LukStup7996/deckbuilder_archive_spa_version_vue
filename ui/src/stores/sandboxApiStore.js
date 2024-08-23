@@ -53,11 +53,6 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
     },
     async fetchDeckData(deckId) {
       try {
-        const deckinfo = await axios.get(
-          apiUrl + "searchdeckinfo&deckid=" + deckId
-        );
-        this.$state.data = deckinfo.data;
-        console.log(this.$state.data);
         this.$state.connectSuccess = false;
         this.$state.deckContents = [];
         const response = await axios.get(

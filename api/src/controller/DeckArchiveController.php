@@ -37,10 +37,6 @@ class DeckArchiveController
                 $getDeckId = filter_input(INPUT_GET,"deckid",FILTER_SANITIZE_NUMBER_INT);
                 $this->displayDecklistContent($getDeckId);
                 break;
-            case 'searchdeckinfo':
-                $getDeckIdInput = filter_input(INPUT_GET,"deckid",FILTER_SANITIZE_NUMBER_INT);
-                $this->getDeckInfo($getDeckIdInput);
-                break;    
             default:
             $errorM = "Unknown Action";
             $this->jsonView->display($errorM);                                
@@ -75,15 +71,14 @@ class DeckArchiveController
         }
         $this->jsonView->display($dtoList);
     }
-    public function getDeckInfo($deckId){
-        $deckInfoData = $this->deckArchiveService->displayDeckInfo($deckId);
-        foreach ($deckInfoData as $deck) {
-            $dtoList[] = DeckModelDTO::map($deck, $this->url);
-        }
-        $this->jsonView->display($dtoList);
-    }
+    
     public function displayDecklistContent($deckId){
         $deckData = [];
+
+        $deckName = $this->deckArchiveService->displayDeckInfoName($deckId);
+
+        $deckFormat = $this->deckArchiveService->displayDeckInfoFormat($deckId);
+
         $mainDeckContents = $this->deckArchiveService->displayMainDeckContent($deckId);
         
         $sideDeckContents = $this->deckArchiveService->displaySideBoardContent($deckId);
@@ -91,6 +86,8 @@ class DeckArchiveController
         $maybeDeckContents = $this->deckArchiveService->displayMaybeBoardContent($deckId);
 
         $deckData['deckId'] = $deckId;
+        $deckData['deckName'] = $deckName;
+        $deckData['deckFormat'] = $deckFormat; 
         $deckData['mainDeckContents'] = $mainDeckContents;
         $deckData['sideDeckContents'] = $sideDeckContents;
         $deckData['maybeDeckContents'] = $maybeDeckContents;
