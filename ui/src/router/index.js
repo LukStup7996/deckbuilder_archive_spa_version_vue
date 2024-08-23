@@ -34,7 +34,7 @@ const routes = [
     component: () => import("../views/DeckArchive.vue"),
   },
   {
-    path: "/deck-content-display/:deckId/:deckName/:deckFormat",
+    path: "/deck-content-display/:deckId",
     name: "deck-content-display",
     component: () => import("../views/DeckContentDisplay.vue"),
     props: true,
@@ -60,9 +60,10 @@ const routes = [
     component: () => import("../views/DeckCreator.vue"),
   },
   {
-    path: "/sand-box",
+    path: "/sand-box/:deckId",
     name: "sand-box",
     component: () => import("../views/SandBox.vue"),
+    props: true,
   },
 ];
 

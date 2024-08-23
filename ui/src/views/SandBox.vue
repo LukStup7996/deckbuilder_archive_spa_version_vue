@@ -2,9 +2,13 @@
 import { useSandboxApiStore } from "@/stores/sandboxApiStore";
 import { useCardApiStore } from "@/stores/cardApiStore";
 import { useArchiveuserApiStore } from "@/stores/archiveuserApiStore";
+import { useRoute } from "vue-router";
 
 export default {
   name: "sand-box",
+  props: {
+    deckId: { type: String, required: true },
+  },
   data() {
     return {
       cardName: "",
@@ -13,28 +17,21 @@ export default {
       mainDeck: [],
       sideDeck: [],
       maybeDeck: [],
-      deckId: "",
-      userId: "",
+      displayedDeck: null,
       sandboxApi: useSandboxApiStore(),
       userApi: useArchiveuserApiStore(),
       cardApi: useCardApiStore(),
     };
   },
   computed: {
-    deckName() {
-      return this.sandboxApi.deckName;
+    mainDeckContents() {
+      return this.displayedDeck ? this.displayedDeck.mainDeckContents : [];
     },
-    deckFormat() {
-      return this.sandboxApi.deckFormat;
+    sideDeckContents() {
+      return this.displayedDeck ? this.displayedDeck.sideDeckContents : [];
     },
-    mainContents() {
-      return this.loadMainContents();
-    },
-    sideContents() {
-      return this.loadSideContents();
-    },
-    maybeContents() {
-      return this.loadMaybeContents();
+    maybeDeckContents() {
+      return this.displayedDeck ? this.displayedDeck.maybeDeckContents : [];
     },
     mainTotal() {
       return this.mainDeck.reduce(
@@ -55,52 +52,25 @@ export default {
       );
     },
   },
-  watch: {
-    searchResults: {
-      handler(newResults) {
-        if (Array.isArray(newResults)) {
-          newResults.forEach((card) => {
-            if (!this.quantity[card.cardId]) {
-              this.quantity[card.cardId] = 0;
-            }
-          });
-        } else {
-          console.error("searchResults is not an array:", newResults);
-        }
-      },
-      immediate: true,
-    },
-  },
   methods: {
     async loadDeckData() {
-      this.userId = this.userApi.userId;
-      this.deckId = this.sandboxApi.deckId;
-      this.sandboxApi.loadSessionData(this.userId, this.deckId).then(() => {
-        this.mainDeck = this.sandboxApi.mainboard;
-        this.sideDeck = this.sandboxApi.sideboard;
-        this.maybeDeck = this.sandboxApi.maybeboard;
-      });
-    },
-    async loadMainContents() {
-      this.userId = this.userApi.userId;
-      this.deckId = this.sandboxApi.deckId;
-      this.sandboxApi.loadMainDeck(this.userId, this.deckId).then(() => {
-        this.mainDeck = this.sandboxApi.mainboard;
-      });
-    },
-    async loadSideContents() {
-      this.userId = this.userApi.userId;
-      this.deckId = this.sandboxApi.deckId;
-      this.sandboxApi.loadMainDeck(this.userId, this.deckId).then(() => {
-        this.mainDeck = this.sandboxApi.mainboard;
-      });
-    },
-    async loadMaybeContents() {
-      this.userId = this.userApi.userId;
-      this.deckId = this.sandboxApi.deckId;
-      this.sandboxApi.loadMainDeck(this.userId, this.deckId).then(() => {
-        this.mainDeck = this.sandboxApi.mainboard;
-      });
+      const deckId = this.route.params.deckId || this.deckId;
+      console.log("Fetching data for deck ID:", deckId);
+      await this.sandboxApi.fetchDeckData(deckId);
+      const deckDetails = this.sandboxApi.deckContents;
+      console.log("Fetched deck details:", deckDetails);
+      if (deckDetails && deckDetails.deckId === deckId) {
+        this.displayedDeck = deckDetails;
+        console.log("Displayed deck set:", this.displayedDeck);
+        console.log("Main Deck Contents:", this.displayedDeck.mainDeckContents);
+        console.log("Side Deck Contents:", this.displayedDeck.sideDeckContents);
+        console.log(
+          "Maybe Deck Contents:",
+          this.displayedDeck.maybeDeckContents
+        );
+      } else {
+        console.error(`Deck with ID ${deckId} not found.`);
+      }
     },
     filterCardNames(cardName) {
       this.cardApi.getCardsByName(cardName).then(() => {
@@ -132,20 +102,20 @@ export default {
     },
   },
   mounted() {
-    this.loadMainContents();
-    this.loadSideContents();
-    this.loadMaybeContents();
+    this.route = useRoute();
+    this.loadDeckData();
   },
 };
 </script>
 
 <template>
   <div class="sandbox-container">
-    <div class="deck-info bg-light mb-2 p-2 text-center">
-      <h2>
-        {{ deckName || "Deck Name" }} Decksize: ({{ mainTotal }}) Format:
-        {{ deckFormat }}
-      </h2>
+    <div class="row">
+      <div class="deck-info bg-light mb-2 p-2 text-center">
+        <div class="col col-sm">
+          <h5>{{ deckName }} Format: {{ deckFormat }}</h5>
+        </div>
+      </div>
     </div>
     <div class="content d-flex">
       <div class="sidebar bg-secondary text-white p-3">
@@ -153,7 +123,7 @@ export default {
           <input v-model="cardName" placeholder="Search cards" />
           <button @click="filterCardNames">Search</button>
         </div>
-        <div v-if="searchResults.length">
+        <div>
           <div v-for="card in cards" :key="card.cardId" class="card-item">
             <img
               :src="require(`../assets/img/${card.cardId}.jpg`)"
@@ -169,35 +139,68 @@ export default {
       </div>
       <div class="main-container d-flex flex-column flex-grow-1">
         <div id="main" class="bg-danger p-3 mb-2 flex-grow-1">
-          Mainboard: ({{ mainTotal }})
-          <div v-for="card in mainDeck" :key="card.cardId">
-            <div class="row">
-              <div class="col-sm">{{ card.cardName }}</div>
-              <div class="col-sm">{{ card.manaValue }}</div>
-              <div class="col-sm">{{ card.quantity }}</div>
+          <h6>Main Deck</h6>
+          <div v-if="mainDeckContents.length">
+            <div
+              v-for="card in mainDeckContents"
+              :key="card.cardId"
+              class="row"
+            >
+              <div class="col-sm">
+                <p>{{ card.cardName }}</p>
+              </div>
+              <div class="col-sm">
+                <p>{{ card.manaValue }}</p>
+              </div>
+              <div class="col-sm">
+                <p>{{ card.quantity }}</p>
+              </div>
             </div>
           </div>
+          <p v-else>No cards in Main Deck</p>
         </div>
         <div class="d-flex flex-column">
           <div id="side" class="bg-primary p-3 mb-2">
-            Side Container: ({{ sideTotal }})
-            <div v-for="card in sideDeck" :key="card.cardId">
-              <div class="row">
-                <div class="col-sm">{{ card.cardName }}</div>
-                <div class="col-sm">{{ card.manaValue }}</div>
-                <div class="col-sm">{{ card.quantity }}</div>
+            <h6>Side Deck</h6>
+            <div v-if="sideDeckContents.length">
+              <div
+                v-for="card in sideDeckContents"
+                :key="card.cardId"
+                class="row"
+              >
+                <div class="col-sm">
+                  <p>{{ card.cardName }}</p>
+                </div>
+                <div class="col-sm">
+                  <p>{{ card.manaValue }}</p>
+                </div>
+                <div class="col-sm">
+                  <p>{{ card.quantity }}</p>
+                </div>
               </div>
             </div>
+            <p v-else>No cards in Side Deck</p>
           </div>
           <div id="maybe" class="bg-success p-3">
-            Maybe Container: ({{ maybeTotal }})
-            <div v-for="card in maybeDeck" :key="card.cardId">
-              <div class="row">
-                <div class="col-sm">{{ card.cardName }}</div>
-                <div class="col-sm">{{ card.manaValue }}</div>
-                <div class="col-sm">{{ card.quantity }}</div>
+            <h6>Maybe Deck</h6>
+            <div v-if="maybeDeckContents.length">
+              <div
+                v-for="card in maybeDeckContents"
+                :key="card.cardId"
+                class="row"
+              >
+                <div class="col-sm">
+                  <p>{{ card.cardName }}</p>
+                </div>
+                <div class="col-sm">
+                  <p>{{ card.manaValue }}</p>
+                </div>
+                <div class="col-sm">
+                  <p>{{ card.quantity }}</p>
+                </div>
               </div>
             </div>
+            <p v-else>No cards in Maybe Deck</p>
           </div>
         </div>
       </div>

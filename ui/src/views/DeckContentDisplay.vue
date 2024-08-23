@@ -6,8 +6,6 @@ export default {
   name: "deck-content-display",
   props: {
     deckId: { type: String, required: true },
-    deckName: { type: String, required: true },
-    deckFormat: { type: String, required: true },
   },
   data() {
     return {
@@ -59,7 +57,7 @@ export default {
     <div class="row">
       <div class="deck-info bg-light mb-2 p-2 text-center">
         <div class="col col-sm">
-          <h5>{{ deckName }}</h5>
+          <h5>{{ deckName }} Format: {{ deckFormat }}</h5>
         </div>
       </div>
     </div>
@@ -117,9 +115,6 @@ export default {
         </div>
         <p v-else>No cards in Maybe Deck</p>
       </div>
-    </div>
-    <div class="col col-sm">
-      <h6>Format: {{ deckFormat }}</h6>
     </div>
   </div>
   <div v-else>

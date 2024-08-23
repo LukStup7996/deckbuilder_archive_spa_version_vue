@@ -7,9 +7,8 @@ const apiUrl =
 
 export const useSandboxApiStore = defineStore("sandboxApi", {
   state: () => ({
-    deckId: "",
-    deckName: "",
-    deckFormat: "",
+    data: [],
+    deckContents: [],
     mainboard: [],
     sideboard: [],
     maybeboard: [],
@@ -52,80 +51,24 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
         );
       }
     },
-    async loadSessionData(userId, deckId) {
-      this.$state.connectSuccess = false;
+    async fetchDeckData(deckId) {
       try {
+        const deckinfo = await axios.get(
+          apiUrl + "searchdeckinfo&deckid=" + deckId
+        );
+        this.$state.data = deckinfo.data;
+        console.log(this.$state.data);
+        this.$state.connectSuccess = false;
+        this.$state.deckContents = [];
         const response = await axios.get(
-          `${apiUrl}selectdeck&userid=${userId}&deckId=${deckId}`
+          apiUrl + "displaydeckcontents&deckid=" + deckId
         );
+        this.$state.deckContents = response.data;
+        console.log(this.$state.deckContents);
         this.$state.connectSuccess = true;
-        console.log(this.connectSuccess);
-        this.$state.deckId = response.data.deckId;
-        console.log(this.deckId);
-        this.$state.mainboard = response.data.mainDeck;
-        console.log(this.mainboard);
-        this.$state.sideboard = response.data.sideDeck;
-        console.log(this.sideboard);
-        this.$state.maybeboard = response.data.maybeDeck;
-        console.log(this.maybeboard);
       } catch (error) {
-        console.error(
-          "An error has occurred trying to load your deck data:",
-          error
-        );
-      }
-    },
-    async loadMainDeck(userId, deckId) {
-      this.$state.connectSuccess = false;
-      try {
-        const response = await axios.get(
-          `${apiUrl}displaymain&userid=${userId}&deckId=${deckId}`
-        );
-        this.$state.connectSuccess = true;
-        console.log(this.connectSuccess);
-        this.$state.deckId = response.data.id;
-        console.log(this.deckId);
-        this.$state.mainboard = response.data.main;
-        console.log(this.mainboard);
-      } catch (error) {
-        console.error(
-          "An error has occurred trying to load your deck data:",
-          error
-        );
-      }
-    },
-    async loadSideDeck(userId, deckId) {
-      this.$state.connectSuccess = false;
-      try {
-        const response = await axios.get(
-          `${apiUrl}displayside&userid=${userId}&deckId=${deckId}`
-        );
-        this.$state.connectSuccess = true;
-        console.log(this.connectSuccess);
-        this.$state.deckId = response.data.id;
-        console.log(this.deckId);
-        this.$state.mainboard = response.data.side;
-        console.log(this.mainboard);
-      } catch (error) {
-        console.error(
-          "An error has occurred trying to load your deck data:",
-          error
-        );
-      }
-    },
-    async loadMaybeDeck(userId, deckId) {
-      this.$state.connectSuccess = false;
-      try {
-        const response = await axios.get(
-          `${apiUrl}displaymaybe&userid=${userId}&deckId=${deckId}`
-        );
-        this.$state.connectSuccess = true;
-        console.log(this.connectSuccess);
-        this.$state.deckId = response.data.id;
-        console.log(this.deckId);
-        this.$state.mainboard = response.data.maybe;
-        console.log(this.mainboard);
-      } catch (error) {
+        this.$state.connectSuccess = false;
+        this.$state.deckContents = [];
         console.error(
           "An error has occurred trying to load your deck data:",
           error

@@ -42,4 +42,8 @@ class DeckArchiveService
         $maybeBoardContents = $this->deckArchiveGateway->displayMaybeBoardContent($deckId);
         return $maybeBoardContents; 
     }
+    public function displayDeckInfo($deckId){
+        $deckInfo = $this->deckArchiveGateway->displayDeckInfo($deckId);
+        return $deckInfo;
+    }
 }

@@ -22,7 +22,6 @@ class AccessDeckArchiveFromDBGateway
         $statement->execute();
         $listOfDecksWithNameLike = $statement->fetchAll(PDO::FETCH_ASSOC);
         return $this->mapAllDecklists($listOfDecksWithNameLike);
-     
     }
     public function getDecksByName($deckName){
         $sql = "SELECT deck_id, user_id, deck_name, format FROM decklists WHERE deck_name LIKE :deck_name";
@@ -94,6 +93,14 @@ class AccessDeckArchiveFromDBGateway
         $statement->execute();
         $listOfMainDeckContents = $statement->fetchAll(PDO::FETCH_ASSOC);
         return $this->mapAllDeckContents($listOfMainDeckContents);
+    }
+    public function displayDeckInfo($deckId){
+        $sql = "SELECT deck_id, user_id, deck_name, format FROM decklists WHERE deck_id = :deckId";
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindParam(':deckId', $deckId);
+        $statement->execute();
+        $deckInfo = $statement->fetchAll(PDO::FETCH_ASSOC);
+        return $this->mapAllDecklists($deckInfo);
     }
     private function mapAllDecklists(array $listOfDecks){
         $return = [];

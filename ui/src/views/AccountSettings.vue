@@ -147,11 +147,9 @@ export default {
             <p class="card-text">Deck-ID: {{ deck.deckId }}</p>
             <router-link
               :to="{
-                name: 'deck-content-display',
+                name: 'sand-box',
                 params: {
                   deckId: deck.deckId,
-                  deckName: deck.deckName,
-                  deckFromat: deck.deckFromat,
                 },
               }"
             >

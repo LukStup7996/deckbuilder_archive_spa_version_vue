@@ -27,7 +27,7 @@ export default {
     async createNewDeck() {
       console.log(this.userID);
       await this.sandboxApi.createDeck(this.userID, this.deckName, this.format);
-      this.$router.push("/sand-box");
+      this.$router.push("/account-settings");
     },
     async setUserID() {
       this.userID = this.userApi.userId;
