@@ -41,7 +41,6 @@ class NavigationController
             case 'searchalldecks':
             case 'displayowned':
             case 'displaydeckcontents':
-            case 'searchdeckinfo':    
                 $this->searchForDeck();
                 break;    
             case 'createarchiver':

@@ -24,6 +24,12 @@ export default {
     };
   },
   computed: {
+    deckName() {
+      return this.displayedDeck ? this.displayedDeck.deckName : [];
+    },
+    deckFormat() {
+      return this.displayedDeck ? this.displayedDeck.deckFormat : [];
+    },
     mainDeckContents() {
       return this.displayedDeck ? this.displayedDeck.mainDeckContents : [];
     },
@@ -61,13 +67,9 @@ export default {
       console.log("Fetched deck details:", deckDetails);
       if (deckDetails && deckDetails.deckId === deckId) {
         this.displayedDeck = deckDetails;
-        console.log("Displayed deck set:", this.displayedDeck);
-        console.log("Main Deck Contents:", this.displayedDeck.mainDeckContents);
-        console.log("Side Deck Contents:", this.displayedDeck.sideDeckContents);
-        console.log(
-          "Maybe Deck Contents:",
-          this.displayedDeck.maybeDeckContents
-        );
+        this.mainDeck = deckDetails.mainDeckContents || [];
+        this.sideDeck = deckDetails.sideDeckContents || [];
+        this.maybeDeck = deckDetails.maybeDeckContents || [];
       } else {
         console.error(`Deck with ID ${deckId} not found.`);
       }
@@ -75,30 +77,82 @@ export default {
     filterCardNames(cardName) {
       this.cardApi.getCardsByName(cardName).then(() => {
         this.cards = this.cardApi.cards;
+        console.log(this.cards);
       });
     },
-    addCardToDeck(cardId, destination) {
-      const card = this.cards.find((card) => card.cardId === cardId);
+    async addToMain(cardId) {
+      const card = this.mainDeck.find((card) => card.cardId === cardId);
       if (card) {
-        const quantity = (this.quantity[cardId] || 0) + 1;
-        this.quantity[cardId] = quantity;
-        this.cardApi.fetchCardDetails(cardId).then(() => {
-          const cardDetails = this.cardApi.cards;
-          if (!cardDetails) return;
-          const cardInfo = {
-            card_name: cardDetails.cardName,
-            mana_value: cardDetails.manaValue,
-            quantity,
-          };
-          if (destination === "main") {
-            this.sandboxApi.mainboard.push(cardInfo);
-          } else if (destination === "side") {
-            this.sandboxApi.sideboard.push(cardInfo);
-          } else if (destination === "maybe") {
-            this.sandboxApi.maybeboard.push(cardInfo);
-          }
-        });
+        const updatedQuantity = card.quantity + 1;
+        card.quantity = updatedQuantity;
+
+        try {
+          await this.sandboxApi.addCardToDBCardsDecklists(
+            this.userApi.userId,
+            cardId,
+            this.deckId,
+            updatedQuantity,
+            "No", // sideBoard
+            "No" // maybeBoard
+          );
+        } catch (error) {
+          console.error("Failed to update main deck quantity:", error);
+        }
       }
+    },
+
+    async addToSide(cardId) {
+      console.log("Attempting to add to Side Deck:", cardId);
+      const card = this.sideDeck.find((card) => card.cardId === cardId);
+      if (card) {
+        console.log("Card found in Side Deck:", card);
+        const updatedQuantity = card.quantity + 1;
+        card.quantity = updatedQuantity;
+
+        try {
+          await this.sandboxApi.addCardToDBCardsDecklists(
+            this.userApi.userId,
+            cardId,
+            this.deckId,
+            updatedQuantity,
+            "Yes", // sideBoard
+            "No" // maybeBoard
+          );
+        } catch (error) {
+          console.error("Failed to update side deck quantity:", error);
+        }
+      }
+    },
+
+    async addToMaybe(cardId) {
+      console.log("Attempting to add to Maybe Deck:", cardId);
+      const card = this.maybeDeck.find((card) => card.cardId === cardId);
+      if (card) {
+        console.log("Card found in Maybe Deck:", card);
+        const updatedQuantity = card.quantity + 1;
+        card.quantity = updatedQuantity;
+
+        try {
+          await this.sandboxApi.addCardToDBCardsDecklists(
+            this.userApi.userId,
+            cardId,
+            this.deckId,
+            updatedQuantity,
+            "No", // sideBoard
+            "Yes" // maybeBoard
+          );
+        } catch (error) {
+          console.error("Failed to update maybe deck quantity:", error);
+        }
+      }
+    },
+  },
+  watch: {
+    quantity: {
+      handler() {
+        this.loadDeckData();
+      },
+      deep: true,
     },
   },
   mounted() {
@@ -113,7 +167,7 @@ export default {
     <div class="row">
       <div class="deck-info bg-light mb-2 p-2 text-center">
         <div class="col col-sm">
-          <h5>{{ deckName }} Format: {{ deckFormat }}</h5>
+          <h5>{{ deckName }} {{ deckFormat }} ({{ mainTotal }})</h5>
         </div>
       </div>
     </div>
@@ -121,25 +175,25 @@ export default {
       <div class="sidebar bg-secondary text-white p-3">
         <div>
           <input v-model="cardName" placeholder="Search cards" />
-          <button @click="filterCardNames">Search</button>
+          <button @click="filterCardNames(cardName)">Search</button>
         </div>
-        <div>
+        <div v-if="cards.length">
           <div v-for="card in cards" :key="card.cardId" class="card-item">
             <img
               :src="require(`../assets/img/${card.cardId}.jpg`)"
               class="card-img"
-              style="font-size: 8px"
+              style="width: 12px; height: auto"
             />
             <p>{{ card.cardName }}</p>
-            <button @click="addCardToDeck(card.cardId, 'main')">Main</button>
-            <button @click="addCardToDeck(card.cardId, 'side')">Side</button>
-            <button @click="addCardToDeck(card.cardId, 'maybe')">Maybe</button>
+            <button @click="addToMain(card.cardId)">Main</button>
+            <button @click="addToSide(card.cardId)">Side</button>
+            <button @click="addToMaybe(card.cardId)">Maybe</button>
           </div>
         </div>
       </div>
       <div class="main-container d-flex flex-column flex-grow-1">
         <div id="main" class="bg-danger p-3 mb-2 flex-grow-1">
-          <h6>Main Deck</h6>
+          <h6>Main Deck {{ mainTotal }}</h6>
           <div v-if="mainDeckContents.length">
             <div
               v-for="card in mainDeckContents"
@@ -155,13 +209,16 @@ export default {
               <div class="col-sm">
                 <p>{{ card.quantity }}</p>
               </div>
+              <div class="col-sm">
+                <button @click="addToMain(card.cardId)">+</button>
+              </div>
             </div>
           </div>
           <p v-else>No cards in Main Deck</p>
         </div>
         <div class="d-flex flex-column">
           <div id="side" class="bg-primary p-3 mb-2">
-            <h6>Side Deck</h6>
+            <h6>Side Deck {{ sideTotal }}</h6>
             <div v-if="sideDeckContents.length">
               <div
                 v-for="card in sideDeckContents"
@@ -177,12 +234,15 @@ export default {
                 <div class="col-sm">
                   <p>{{ card.quantity }}</p>
                 </div>
+                <div class="col-sm">
+                  <button @click="addToSide(card.cardId)">+</button>
+                </div>
               </div>
             </div>
             <p v-else>No cards in Side Deck</p>
           </div>
           <div id="maybe" class="bg-success p-3">
-            <h6>Maybe Deck</h6>
+            <h6>Maybe Deck {{ maybeTotal }}</h6>
             <div v-if="maybeDeckContents.length">
               <div
                 v-for="card in maybeDeckContents"
@@ -197,6 +257,9 @@ export default {
                 </div>
                 <div class="col-sm">
                   <p>{{ card.quantity }}</p>
+                </div>
+                <div class="col-sm">
+                  <button @click="addToMaybe(card.cardId)">+</button>
                 </div>
               </div>
             </div>
@@ -238,7 +301,7 @@ export default {
   margin-bottom: 10px;
 }
 
-.card-img {
+.card-item img {
   width: 100px;
   height: auto;
   margin-bottom: 5px;
@@ -246,16 +309,19 @@ export default {
 
 .main-container {
   display: flex;
+  flex-grow: 1;
   flex-direction: column;
-  flex-grow: 1;
 }
 
-#main {
-  flex-grow: 1;
+.bg-danger {
+  background-color: red;
 }
 
-#side,
-#maybe {
-  flex: 1;
+.bg-primary {
+  background-color: blue;
+}
+
+.bg-success {
+  background-color: green;
 }
 </style>
