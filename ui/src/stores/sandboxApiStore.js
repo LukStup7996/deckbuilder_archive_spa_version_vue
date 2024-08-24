@@ -7,11 +7,7 @@ const apiUrl =
 
 export const useSandboxApiStore = defineStore("sandboxApi", {
   state: () => ({
-    data: [],
     deckContents: [],
-    mainboard: [],
-    sideboard: [],
-    maybeboard: [],
     connectSuccess: false,
   }),
   actions: {
@@ -23,19 +19,9 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
         );
         console.log(response);
         if (response.data) {
-          this.$state.connectSuccess = true;
-          console.log(this.connectSuccess);
-          this.$state.deckId = response.data.deck_id;
-          console.log(this.deckId);
-          this.$state.deckName = response.data.deck_name;
-          console.log(this.deckName);
-          this.$state.deckFormat = response.data.format;
-          console.log(this.deckFormat);
+          this.fetchDeckData(userId, response.data.deck_id);
+          console.log(response.data.deck_id);
         } else {
-          this.$state.deckName = deckName;
-          console.log(this.deckName);
-          this.$state.deckFormat = format;
-          console.log(this.deckFormat);
           this.$state.connectSuccess = false;
           console.log(this.connectSuccess);
           console.error(
@@ -85,13 +71,7 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
         );
         if (response.data) {
           this.$state.connectSuccess = true;
-          this.$state.deckId = "";
-          this.$state.deckName = "";
-          this.$state.deckFormat = "";
-          this.$state.mainboard = [];
-          this.$state.sideboard = [];
-          this.$state.maybeboard = [];
-          this.loadSessionData(userId, deckId);
+          console.log("Successfully added card:", response.data);
         } else {
           console.error("Couldn't find response data:", response.data);
         }
@@ -106,24 +86,17 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
       userId,
       cardId,
       deckId,
-      quantity,
       sideBoard,
       maybeBoard
     ) {
       this.$state.connectSuccess = false;
       try {
         const response = await axios.post(
-          `${apiUrl}removecard&userid=${userId}&cardid=${cardId}&deckid=${deckId}&quantity=${quantity}&sideboard=${sideBoard}&maybeboard=${maybeBoard}`
+          `${apiUrl}removecard&userid=${userId}&cardid=${cardId}&deckid=${deckId}&sideboard=${sideBoard}&maybeboard=${maybeBoard}`
         );
         if (response.data) {
           this.$state.connectSuccess = true;
-          this.$state.deckId = "";
-          this.$state.deckName = "";
-          this.$state.deckFormat = "";
-          this.$state.mainboard = [];
-          this.$state.sideboard = [];
-          this.$state.maybeboard = [];
-          this.loadSessionData(userId, deckId);
+          console.log("Successfully removed card:", response.data);
         } else {
           console.error("Couldn't find response data:", response.data);
         }
@@ -142,12 +115,7 @@ export const useSandboxApiStore = defineStore("sandboxApi", {
         );
         if (response.data === "Successfully deleted decklist.") {
           this.$state.connectSuccess = true;
-          this.$state.deckId = "";
-          this.$state.deckName = "";
-          this.$state.deckFormat = "";
-          this.$state.mainboard = [];
-          this.$state.sideboard = [];
-          this.$state.maybeboard = [];
+          this.$state.deckContents = [];
         } else {
           console.error("Couldn't find response data:", response.data);
         }
