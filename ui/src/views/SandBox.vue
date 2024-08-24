@@ -18,17 +18,23 @@ export default {
       sideDeck: [],
       maybeDeck: [],
       displayedDeck: null,
-      sandboxApi: useSandboxApiStore(),
-      userApi: useArchiveuserApiStore(),
-      cardApi: useCardApiStore(),
     };
   },
   computed: {
+    sandboxApi() {
+      return useSandboxApiStore();
+    },
+    userApi() {
+      return useArchiveuserApiStore();
+    },
+    cardApi() {
+      return useCardApiStore();
+    },
     deckName() {
-      return this.displayedDeck ? this.displayedDeck.deckName : [];
+      return this.displayedDeck ? this.displayedDeck.deckName : "";
     },
     deckFormat() {
-      return this.displayedDeck ? this.displayedDeck.deckFormat : [];
+      return this.displayedDeck ? this.displayedDeck.deckFormat : "";
     },
     mainDeckContents() {
       return this.displayedDeck ? this.displayedDeck.mainDeckContents : [];
@@ -60,7 +66,7 @@ export default {
   },
   methods: {
     async loadDeckData() {
-      const deckId = this.route.params.deckId || this.deckId;
+      const deckId = this.$route.params.deckId || this.deckId;
       console.log("Fetching data for deck ID:", deckId);
       await this.sandboxApi.fetchDeckData(deckId);
       const deckDetails = this.sandboxApi.deckContents;
@@ -68,20 +74,23 @@ export default {
       if (deckDetails && deckDetails.deckId === deckId) {
         this.displayedDeck = deckDetails;
         this.mainDeck = deckDetails.mainDeckContents || [];
+        console.log(this.mainDeck);
         this.sideDeck = deckDetails.sideDeckContents || [];
+        console.log(this.sideDeck);
         this.maybeDeck = deckDetails.maybeDeckContents || [];
+        console.log(this.maybeDeck);
       } else {
         console.error(`Deck with ID ${deckId} not found.`);
       }
     },
-    filterCardNames(cardName) {
-      this.cardApi.getCardsByName(cardName).then(() => {
-        this.cards = this.cardApi.cards;
-        console.log(this.cards);
-      });
+    async filterCardNames(cardName) {
+      await this.cardApi.getCardsByName(cardName);
+      this.cards = this.cardApi.cards;
+      console.log(this.cards);
     },
     async addToMain(cardId) {
       const card = this.mainDeck.find((card) => card.cardId === cardId);
+      console.log(card);
       if (card) {
         const updatedQuantity = card.quantity + 1;
         card.quantity = updatedQuantity;
@@ -95,6 +104,7 @@ export default {
             "No", // sideBoard
             "No" // maybeBoard
           );
+          this.loadDeckData();
         } catch (error) {
           console.error("Failed to update main deck quantity:", error);
         }
@@ -102,10 +112,10 @@ export default {
     },
 
     async addToSide(cardId) {
-      console.log("Attempting to add to Side Deck:", cardId);
       const card = this.sideDeck.find((card) => card.cardId === cardId);
+      console.log(card);
+
       if (card) {
-        console.log("Card found in Side Deck:", card);
         const updatedQuantity = card.quantity + 1;
         card.quantity = updatedQuantity;
 
@@ -118,6 +128,7 @@ export default {
             "Yes", // sideBoard
             "No" // maybeBoard
           );
+          this.loadDeckData();
         } catch (error) {
           console.error("Failed to update side deck quantity:", error);
         }
@@ -125,10 +136,10 @@ export default {
     },
 
     async addToMaybe(cardId) {
-      console.log("Attempting to add to Maybe Deck:", cardId);
       const card = this.maybeDeck.find((card) => card.cardId === cardId);
+      console.log(cardId);
+
       if (card) {
-        console.log("Card found in Maybe Deck:", card);
         const updatedQuantity = card.quantity + 1;
         card.quantity = updatedQuantity;
 
@@ -141,18 +152,148 @@ export default {
             "No", // sideBoard
             "Yes" // maybeBoard
           );
+          this.loadDeckData();
         } catch (error) {
           console.error("Failed to update maybe deck quantity:", error);
         }
       }
     },
+    async reduceMainByOne(cardId) {
+      const card = this.mainDeck.find((card) => card.cardId === cardId);
+      if (card) {
+        const updatedQuantity = card.quantity - 1;
+        card.quantity = updatedQuantity;
+
+        if (updatedQuantity <= 0) {
+          await this.removeCardFromMain(cardId);
+        } else {
+          try {
+            await this.sandboxApi.addCardToDBCardsDecklists(
+              this.userApi.userId,
+              cardId,
+              this.deckId,
+              updatedQuantity,
+              "No", // sideBoard
+              "No" // maybeBoard
+            );
+            this.loadDeckData();
+          } catch (error) {
+            console.error("Failed to update main deck quantity:", error);
+          }
+        }
+      }
+    },
+
+    async reduceSideByOne(cardId) {
+      const card = this.sideDeck.find((card) => card.cardId === cardId);
+      if (card) {
+        const updatedQuantity = card.quantity - 1;
+        card.quantity = updatedQuantity;
+
+        if (updatedQuantity <= 0) {
+          await this.removeCardFromSide(cardId);
+        } else {
+          try {
+            await this.sandboxApi.addCardToDBCardsDecklists(
+              this.userApi.userId,
+              cardId,
+              this.deckId,
+              updatedQuantity,
+              "Yes", // sideBoard
+              "No" // maybeBoard
+            );
+            this.loadDeckData();
+          } catch (error) {
+            console.error("Failed to update side deck quantity:", error);
+          }
+        }
+      }
+    },
+
+    async reduceMaybeByOne(cardId) {
+      const card = this.maybeDeck.find((card) => card.cardId === cardId);
+      if (card) {
+        const updatedQuantity = card.quantity - 1;
+        card.quantity = updatedQuantity;
+
+        if (updatedQuantity <= 0) {
+          await this.removeCardFromMaybe(cardId);
+        } else {
+          try {
+            await this.sandboxApi.addCardToDBCardsDecklists(
+              this.userApi.userId,
+              cardId,
+              this.deckId,
+              updatedQuantity,
+              "No", // sideBoard
+              "Yes" // maybeBoard
+            );
+            this.loadDeckData();
+          } catch (error) {
+            console.error("Failed to update maybe deck quantity:", error);
+          }
+        }
+      }
+    },
+
+    async removeCardFromMain(cardId) {
+      const card = this.mainDeck.find((card) => card.cardId === cardId);
+      if (card) {
+        try {
+          await this.sandboxApi.removeCardFromDBCardsDecklists(
+            this.userApi.userId,
+            cardId,
+            this.deckId,
+            "No",
+            "No"
+          );
+          this.loadDeckData();
+        } catch (error) {
+          console.error("Failed to remove card from Main Deck.", error);
+        }
+      }
+    },
+    async removeCardFromSide(cardId) {
+      const card = this.sideDeck.find((card) => card.cardId === cardId);
+      if (card) {
+        try {
+          await this.sandboxApi.removeCardFromDBCardsDecklists(
+            this.userApi.userId,
+            cardId,
+            this.deckId,
+            "Yes",
+            "No"
+          );
+          this.loadDeckData();
+        } catch (error) {
+          console.error("Failed to remove card from Side Deck.", error);
+        }
+      }
+    },
+    async removeCardFromMaybe(cardId) {
+      const card = this.maybeDeck.find((card) => card.cardId === cardId);
+      if (card) {
+        try {
+          await this.sandboxApi.removeCardFromDBCardsDecklists(
+            this.userApi.userId,
+            cardId,
+            this.deckId,
+            "No",
+            "Yes"
+          );
+          this.loadDeckData();
+        } catch (error) {
+          console.error("Failed to remove card from Maybe Deck.", error);
+        }
+      }
+    },
   },
   watch: {
-    quantity: {
+    deckId: {
+      immediate: true,
       handler() {
         this.loadDeckData();
       },
-      deep: true,
     },
   },
   mounted() {
@@ -179,15 +320,31 @@ export default {
         </div>
         <div v-if="cards.length">
           <div v-for="card in cards" :key="card.cardId" class="card-item">
-            <img
-              :src="require(`../assets/img/${card.cardId}.jpg`)"
-              class="card-img"
-              style="width: 12px; height: auto"
-            />
-            <p>{{ card.cardName }}</p>
-            <button @click="addToMain(card.cardId)">Main</button>
-            <button @click="addToSide(card.cardId)">Side</button>
-            <button @click="addToMaybe(card.cardId)">Maybe</button>
+            <div class="col-sm">
+              <img
+                :src="require(`../assets/img/${card.cardId}.jpg`)"
+                class="card-img"
+                style="width: 20px; height: auto"
+              />
+            </div>
+            <div class="col-sm">
+              <p>{{ card.cardName }}</p>
+            </div>
+            <div class="col-sm">
+              <button class="btn btn-danger" @click="addToMain(card.cardId)">
+                +
+              </button>
+            </div>
+            <div class="col-sm">
+              <button class="btn btn-primary" @click="addToSide(card.cardId)">
+                +
+              </button>
+            </div>
+            <div class="col-sm">
+              <button class="btn btn-success" @click="addToMaybe(card.cardId)">
+                +
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -210,7 +367,25 @@ export default {
                 <p>{{ card.quantity }}</p>
               </div>
               <div class="col-sm">
-                <button @click="addToMain(card.cardId)">+</button>
+                <button class="btn btn-info" @click="addToMain(card.cardId)">
+                  +
+                </button>
+              </div>
+              <div class="col-sm">
+                <button
+                  class="btn btn-info"
+                  @click="reduceMainByOne(card.cardId)"
+                >
+                  -
+                </button>
+              </div>
+              <div class="col-sm">
+                <button
+                  class="btn btn-info"
+                  @click="removeCardFromMain(card.cardId)"
+                >
+                  x
+                </button>
               </div>
             </div>
           </div>
@@ -235,7 +410,25 @@ export default {
                   <p>{{ card.quantity }}</p>
                 </div>
                 <div class="col-sm">
-                  <button @click="addToSide(card.cardId)">+</button>
+                  <button class="btn btn-info" @click="addToSide(card.cardId)">
+                    +
+                  </button>
+                </div>
+                <div class="col-sm">
+                  <button
+                    class="btn btn-info"
+                    @click="reduceSideByOne(card.cardId)"
+                  >
+                    -
+                  </button>
+                </div>
+                <div class="col-sm">
+                  <button
+                    class="btn btn-info"
+                    @click="removeCardFromSide(card.cardId)"
+                  >
+                    x
+                  </button>
                 </div>
               </div>
             </div>
@@ -259,7 +452,25 @@ export default {
                   <p>{{ card.quantity }}</p>
                 </div>
                 <div class="col-sm">
-                  <button @click="addToMaybe(card.cardId)">+</button>
+                  <button class="btn btn-info" @click="addToMaybe(card.cardId)">
+                    +
+                  </button>
+                </div>
+                <div class="col-sm">
+                  <button
+                    class="btn btn-info"
+                    @click="reduceMaybeByOne(card.cardId)"
+                  >
+                    -
+                  </button>
+                </div>
+                <div class="col-sm">
+                  <button
+                    class="btn btn-info"
+                    @click="removeCardFromMaybe(card.cardId)"
+                  >
+                    x
+                  </button>
                 </div>
               </div>
             </div>
@@ -289,7 +500,7 @@ export default {
 }
 
 .sidebar {
-  flex-basis: 30%;
+  flex-basis: 18.5%;
   overflow-y: auto;
   transition: transform 0.3s ease;
 }

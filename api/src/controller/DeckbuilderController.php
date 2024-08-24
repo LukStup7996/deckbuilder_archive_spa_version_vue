@@ -155,7 +155,7 @@ class DeckbuilderController
     }
     private function addCardToSideboard($cardId, $deckId, $quantity) {
         $this->removeCardFromSideboard($cardId, $deckId);
-        $success = $this->deckBuilderService->uploadMainDeckContents($cardId, $deckId, $quantity);
+        $success = $this->deckBuilderService->uploadSideDeckContents($cardId, $deckId, $quantity);
         if($success){
             $succesM = "Successfully added card";
             $this->jsonView->display($succesM);
@@ -169,7 +169,7 @@ class DeckbuilderController
     }
     private function addCardToMaybeboard($cardId, $deckId, $quantity) {
         $this->removeCardFromMaybeboard($cardId, $deckId);
-        $success = $this->deckBuilderService->uploadMainDeckContents($cardId, $deckId, $quantity);
+        $success = $this->deckBuilderService->uploadMaybeDeckContents($cardId, $deckId, $quantity);
         if($success){
             $succesM = "Successfully added card";
             $this->jsonView->display($succesM);

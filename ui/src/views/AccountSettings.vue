@@ -2,6 +2,7 @@
 import { mapActions, mapState } from "pinia";
 import { useArchiveuserApiStore } from "@/stores/archiveuserApiStore";
 import { useDeckArchiveApiStore } from "@/stores/deckArchiveApiStore";
+import { useSandboxApiStore } from "@/stores/sandboxApiStore";
 
 export default {
   data() {
@@ -18,6 +19,7 @@ export default {
       userApi: useArchiveuserApiStore(),
       ownedDecks: [],
       deckArchiveApi: useDeckArchiveApiStore(),
+      sandboxApi: useSandboxApiStore(),
     };
   },
   computed: {
@@ -62,6 +64,11 @@ export default {
       this.userId = this.userApi.userId;
       console.log(this.userId);
       return this.userId;
+    },
+    async deleteDecklist(deckId) {
+      await this.sandboxApi.deleteDeck(this.userId, deckId).then(() => {
+        this.getDecklists();
+      });
     },
   },
   mounted() {
@@ -155,6 +162,9 @@ export default {
             >
               <button class="btn btn-primary">Additional Info</button>
             </router-link>
+            <button @click="deleteDecklist" class="btn btn-danger">
+              Delete Decklist
+            </button>
           </div>
         </div>
       </div>
